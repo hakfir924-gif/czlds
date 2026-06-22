@@ -899,7 +899,7 @@ function renderPhotoExchange() {
   // State changed - do full render
   _momentRenderState = targetState;
 
-  if (bothUploaded) {
+  if (targetState === 'reveal') {
     // Reveal state - show both photos side by side
     var historyHtml = renderPhotoHistoryHtml();
     el.innerHTML = '<div class="moment-reveal">' +
@@ -924,7 +924,7 @@ function renderPhotoExchange() {
     // 绑定历史展开事件
     var histBtn = el.querySelector('.moment-history-toggle');
     if (histBtn) histBtn.addEventListener('click', toggleMomentHistory);
-  } else if (myPhoto.uploaded) {
+  } else if (targetState === 'wait') {
     // Waiting state - I uploaded, waiting for Ta
     var taNotifyHtml = '';
     if (taPhoto.uploaded) {
