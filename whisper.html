@@ -451,6 +451,7 @@ var API_BASE = 'http://localhost:3000';
 var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
+var roomToken = params.get('token') || '';
 
 // ===== 引导语 =====
 var guidanceTexts = {
@@ -535,11 +536,13 @@ function showResult(type) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          role: role,
           time: timeStr,
           type: type,
           summary: resultText,
           text: userText.substring(0, 80) + (userText.length > 80 ? '...' : ''),
-          date: now.toLocaleDateString('zh-CN')
+          date: now.toLocaleDateString('zh-CN'),
+          token: roomToken
         })
       }).catch(function() {});
     }
@@ -548,7 +551,7 @@ function showResult(type) {
 
 // ===== Update nav links =====
 if (roomId) {
-  var navSuffix = '?roomId=' + roomId + '&role=' + role;
+  var navSuffix = '?roomId=' + roomId + '&role=' + role + '&token=' + roomToken;
   var navLinks = document.querySelectorAll('.nav-item');
   navLinks[0].href = './manmanshuo.html' + navSuffix;
   navLinks[1].href = './whisper.html' + navSuffix;

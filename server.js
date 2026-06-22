@@ -63,6 +63,27 @@ function generateRoomId() {
   return code;
 }
 
+function generateToken() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < 8; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+function validateToken(req, roomData) {
+  // POST 请求从 body 或 query 获取 token
+  const clientToken = req.body && req.body.token ? req.body.token : (req.query.token || '');
+  // 房间无 token 字段（历史数据）→ 放行（向后兼容）
+  if (!roomData.token) return true;
+  // 客户端未提供 token（new room 但 URL 没有 token param）→ 仅限 GET 类读操作放行
+  const isReadOnly = req.method === 'GET';
+  if (!clientToken && isReadOnly) return true;
+  // token 匹配 → 放行
+  return roomData.token === clientToken;
+}
+
 // ========== 每日一问 问题池 ==========
 const dailyQuestionPool = [
   '今天最开心的一件事是什么？',
@@ -137,8 +158,10 @@ app.post('/api/room/create', (req, res) => {
     attempts++;
   } while (fs.existsSync(getRoomPath(roomId)) && attempts < 20);
 
+  const token = generateToken();
   const roomData = {
     roomId: roomId,
+    token: token,
     createdAt: new Date().toISOString(),
     signOfDay: generateSignOfDay(),
     members: {
@@ -167,7 +190,7 @@ app.post('/api/room/create', (req, res) => {
     version: 0
   };
   writeRoom(roomId, roomData);
-  res.json({ success: true, roomId: roomId, roomData: roomData });
+  res.json({ success: true, roomId: roomId, token: token, roomData: roomData });
 });
 
 // ========== API: 加入房间 ==========
@@ -177,7 +200,7 @@ app.post('/api/room/join', (req, res) => {
 
   const roomData = readRoom(roomId.toUpperCase());
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   res.json({ success: true, roomData: roomData });
 });
 
@@ -185,6 +208,7 @@ app.post('/api/room/join', (req, res) => {
 app.get('/api/room/:roomId', (req, res) => {
   const roomData = readRoom(req.params.roomId.toUpperCase());
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   res.json({ success: true, roomData: roomData });
 });
 
@@ -193,7 +217,7 @@ app.post('/api/room/:roomId/glimmer', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, status, text, time } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
 
@@ -220,7 +244,7 @@ app.post('/api/room/:roomId/ask', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { question, time, date } = req.body;
   roomData.askRecords.push({
     question: question,
@@ -239,7 +263,7 @@ app.post('/api/room/:roomId/whisper', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { time, type, summary, text, date } = req.body;
   roomData.whisperRecords.push({
     time: time,
@@ -260,7 +284,7 @@ app.post('/api/room/:roomId/together', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { item, time, date } = req.body;
   roomData.togetherRecords.push({
     item: item,
@@ -279,7 +303,7 @@ app.post('/api/room/:roomId/question', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   let newQ;
   do {
     newQ = dailyQuestionPool[Math.floor(Math.random() * dailyQuestionPool.length)];
@@ -308,7 +332,7 @@ app.post('/api/room/:roomId/answer', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, answer } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.dailyQuestionAnswers[memberKey] = answer || '';
@@ -334,7 +358,7 @@ app.post('/api/room/:roomId/challenge/question', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   // Check if one side is waiting
   var hasOneAnswer = (roomData.challengeGuesses.me || roomData.challengeAnswers.me) ||
                      (roomData.challengeGuesses.ta || roomData.challengeAnswers.ta);
@@ -375,7 +399,7 @@ app.post('/api/room/:roomId/challenge/guess', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, guess } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.challengeGuesses[memberKey] = guess || '';
@@ -404,7 +428,7 @@ app.post('/api/room/:roomId/challenge/answer', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, answer } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.challengeAnswers[memberKey] = answer || '';
@@ -432,7 +456,7 @@ app.post('/api/room/:roomId/truth/question', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   // Save current to history if anyone shared
   if (roomData.truthShares.me || roomData.truthShares.ta) {
     roomData.truthHistory.push({
@@ -460,7 +484,7 @@ app.post('/api/room/:roomId/truth/share', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, text } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.truthShares[memberKey] = text || '';
@@ -486,7 +510,7 @@ app.post('/api/room/:roomId/photo/upload', upload.single('photo'), (req, res) =>
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, note } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
 
@@ -521,7 +545,7 @@ app.post('/api/room/:roomId/photo/reset', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   // 如果双方都已上传但还没归档（理论上upload时已归档，这里做兜底）
   if (roomData.photoExchange.me.uploaded && roomData.photoExchange.ta.uploaded) {
     const alreadyArchived = roomData.photoHistory.some(function(h) {
@@ -553,6 +577,7 @@ app.get('/api/room/:roomId/poll', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
 
   const since = parseInt(req.query.since) || 0;
   const role = req.query.role || 'me';

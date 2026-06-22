@@ -495,6 +495,7 @@ var API_BASE = 'http://localhost:3000';
 var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
+var roomToken = params.get('token') || '';
 var serverVersion = 0;
 
 // ===== State =====
@@ -586,7 +587,7 @@ function submitDaily() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/answer', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, answer: answer })
+      body: JSON.stringify({ role: role, answer: answer, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -594,7 +595,8 @@ function submitDaily() {
 function refreshDailyQuestion() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/question', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: roomToken })
     }).then(function(r) { return r.json(); }).then(function(data) {
       if (data.success) {
         dqQuestion = data.dailyQuestion; dqMe = ''; dqTa = '';
@@ -718,7 +720,7 @@ function submitChallengeGuess() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/challenge/guess', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, guess: guess })
+      body: JSON.stringify({ role: role, guess: guess, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -733,7 +735,7 @@ function submitChallengeAnswer() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/challenge/answer', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, answer: answer })
+      body: JSON.stringify({ role: role, answer: answer, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -741,7 +743,8 @@ function submitChallengeAnswer() {
 function refreshChallenge() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/challenge/question', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: roomToken })
     }).then(function(r) { return r.json(); }).then(function(data) {
       if (data.success) {
         chQuestion = data.challengeQuestion;
@@ -810,7 +813,7 @@ function submitTruth() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/truth/share', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, text: text })
+      body: JSON.stringify({ role: role, text: text, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -818,7 +821,8 @@ function submitTruth() {
 function refreshTruth() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/truth/question', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: roomToken })
     }).then(function(r) { return r.json(); }).then(function(data) {
       if (data.success) {
         trQuestion = data.truthQuestion; trMe = ''; trTa = '';
@@ -1021,6 +1025,7 @@ function submitPhoto() {
   formData.append('photo', file);
   formData.append('role', role);
   formData.append('note', note);
+  formData.append('token', roomToken);
 
   var btn = document.getElementById('momentSendBtn');
   if (btn) { btn.disabled = true; btn.textContent = '发送中...'; }
@@ -1057,7 +1062,8 @@ function resetPhotoExchange() {
   renderPhotoExchange();
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/photo/reset', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: role, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -1065,7 +1071,7 @@ function resetPhotoExchange() {
 // ========== Polling ==========
 function pollServer() {
   if (!roomId) return;
-  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role)
+  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role + '&token=' + roomToken)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data.success) return;
@@ -1152,7 +1158,7 @@ function pollServer() {
 // ========== Init: fetch server data first, then render ==========
 function initFromServer(cb) {
   if (!roomId) { cb(); return; }
-  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role)
+  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role + '&token=' + roomToken)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data.success) { cb(); return; }

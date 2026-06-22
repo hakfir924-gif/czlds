@@ -575,6 +575,7 @@ var API_BASE = 'http://localhost:3000';
 var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
+var roomToken = params.get('token') || '';
 var serverVersion = 0;
 
 // ========== SIGN FROM URL ==========
@@ -737,7 +738,7 @@ document.getElementById('myStatusPicker').addEventListener('click', function(e) 
 
 // ========== 心问答 入口 ==========
 if (roomId) {
-  document.getElementById('dqEntryLink').href = './heart-qa.html?roomId=' + roomId + '&role=' + role;
+  document.getElementById('dqEntryLink').href = './heart-qa.html?roomId=' + roomId + '&role=' + role + '&token=' + roomToken;
 }
 
 // ========== 一起的事 ==========
@@ -789,7 +790,7 @@ tt.style.transition = 'all 0.3s ease';
 
 // ========== Update nav links with roomId and role ==========
 if (roomId) {
-  var navSuffix = '?roomId=' + roomId + '&role=' + role;
+  var navSuffix = '?roomId=' + roomId + '&role=' + role + '&token=' + roomToken;
   document.getElementById('navHome').href = './manmanshuo.html' + navSuffix;
   document.getElementById('navWhisper').href = './whisper.html' + navSuffix;
   document.getElementById('navHeart').href = './heart-qa.html' + navSuffix;

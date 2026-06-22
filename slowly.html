@@ -453,7 +453,7 @@ var role = params.get('role') || 'me';
 
   // Load from server if roomId exists
   if (roomId) {
-    fetch(API_BASE + '/api/room/' + roomId)
+    fetch(API_BASE + '/api/room/' + roomId + '?token=' + roomToken)
       .then(function(r) { return r.json(); })
       .then(function(data) {
         if (!data.success) {
@@ -541,7 +541,7 @@ var role = params.get('role') || 'me';
 
 // ===== Update nav links =====
 if (roomId) {
-  var navSuffix = '?roomId=' + roomId + '&role=' + role;
+  var navSuffix = '?roomId=' + roomId + '&role=' + role + '&token=' + roomToken;
   var navLinks = document.querySelectorAll('.nav-item');
   navLinks[0].href = './manmanshuo.html' + navSuffix;
   navLinks[1].href = './whisper.html' + navSuffix;

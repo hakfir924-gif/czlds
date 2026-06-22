@@ -664,11 +664,12 @@ function tryEnter() {
   });
 }
 
-function goToSpace(roomId, role) {
+function goToSpace(roomId, role, token) {
   document.body.style.transition = 'opacity 0.8s ease';
   setTimeout(function() { document.body.style.opacity = '0'; }, 400);
   setTimeout(function() {
-    window.location.href = './envelope.html?roomId=' + roomId + '&role=' + role;
+    var tokenStr = token ? '&token=' + token : '';
+    window.location.href = './envelope.html?roomId=' + roomId + '&role=' + role + tokenStr;
   }, 1100);
 }
 
@@ -687,12 +688,17 @@ function createInvite() {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     inviteRoomId = data.roomId;
+    var inviteToken = data.token || '';
     document.getElementById('genKey').textContent = inviteRoomId;
     document.getElementById('inviteText').textContent =
       '"我给我们留了一个安静的小空间。这是钥匙：' + inviteRoomId + '，慢慢说见。"';
     btn.textContent = '复制邀请';
     btn.classList.remove('success');
     btn.disabled = false;
+    // Auto-navigate to space as 'me' with token
+    if (inviteToken) {
+      setTimeout(function() { goToSpace(inviteRoomId, 'me', inviteToken); }, 1500);
+    }
   })
   .catch(function() {
     // Fallback: generate locally

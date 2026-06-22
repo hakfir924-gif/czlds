@@ -344,6 +344,7 @@ var API_BASE = 'http://localhost:3000';
 var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
+var roomToken = params.get('token') || '';
 
 // ========== Init ==========
 var todaySign = { type: '一句话', content: '今天不用很完美，今天你已经在对方心里了。' };
@@ -391,7 +392,7 @@ function openEnvelope() {
     setTimeout(function() {
       var url = './manmanshuo.html?signType=' + type + '&signContent=' + content;
       if (roomId) {
-        url += '&roomId=' + roomId + '&role=' + role;
+        url += '&roomId=' + roomId + '&role=' + role + '&token=' + roomToken;
       }
       window.location.href = url;
     }, 800);
