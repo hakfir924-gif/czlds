@@ -20,22 +20,22 @@
 
 /* ========== CSS VARIABLES ========== */
 :root {
-  --bg: #faf7f2;
-  --bg2: #f3efe7;
-  --ink: #3d3529;
-  --ink2: #5c5244;
-  --muted: #9b8e7e;
-  --rule: #e5ded2;
-  --accent: #c97d4d;
-  --accent-soft: #dca67a;
-  --accent-light: #f5e6d8;
-  --accent2: #8b9d83;
-  --shadow-sm: 0 1px 3px rgba(61, 53, 41, 0.06);
-  --shadow-md: 0 4px 16px rgba(61, 53, 41, 0.08);
-  --shadow-lg: 0 12px 40px rgba(61, 53, 41, 0.12);
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 24px;
+  --bg: #14110d;
+  --bg2: #1c1813;
+  --ink: #ede4d3;
+  --ink2: #b8ac97;
+  --muted: #7a7163;
+  --rule: #2e281f;
+  --accent: #d4a373;
+  --accent-soft: #b8895c;
+  --accent-light: #2a2218;
+  --accent2: #6f8268;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
   --font-heading: 'WorkSans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
   --font-body: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
 }
@@ -49,40 +49,7 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
 }
-
-/* Dusk glow */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 35%, rgba(220, 166, 122, 0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(139, 157, 131, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 30% at 20% 70%, rgba(201, 125, 77, 0.05) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Floating dots */
-.float-dot {
-  position: absolute;
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  opacity: 0.25;
-  animation: float-up 7s ease-in-out infinite;
-}
-.float-dot:nth-child(1) { left: 15%; top: 70%; animation-delay: 0s; }
-.float-dot:nth-child(2) { left: 32%; top: 58%; animation-delay: 1.5s; background: var(--accent2); }
-.float-dot:nth-child(3) { left: 70%; top: 65%; animation-delay: 3s; }
-.float-dot:nth-child(4) { left: 85%; top: 52%; animation-delay: 4.5s; background: var(--accent2); }
-.float-dot:nth-child(5) { left: 50%; top: 78%; animation-delay: 6s; }
-.float-dot:nth-child(6) { left: 38%; top: 82%; animation-delay: 2s; background: var(--accent2); }
-
-@keyframes float-up {
-  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.15; }
-  50% { transform: translateY(-24px) translateX(6px); opacity: 0.5; }
-}
+.float-dot { display: none; }
 
 /* ========== PAGE ========== */
 .page {
@@ -113,11 +80,11 @@ body::before {
   transform: translateX(-50%);
   width: 240px;
   height: 150px;
-  background: #f5ede0;
+  background: #2a2620;
   border-radius: 6px 6px 14px 14px;
   box-shadow:
-    0 2px 8px rgba(61, 53, 41, 0.08),
-    0 8px 24px rgba(61, 53, 41, 0.06);
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    0 8px 24px rgba(0, 0, 0, 0.25);
   z-index: 2;
   transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -136,7 +103,7 @@ body::before {
   height: 150px;
   z-index: 4;
   clip-path: polygon(0 0, 50% 55%, 100% 0);
-  background: #efe5d4;
+  background: #241f1a;
   border-radius: 14px 14px 0 0;
   transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: 50% 0%;
@@ -155,7 +122,7 @@ body::before {
   height: 150px;
   z-index: 3;
   clip-path: polygon(0 0, 50% 55%, 100% 0);
-  background: #f5ede0;
+  background: #2a2620;
   border-radius: 14px 14px 0 0;
   pointer-events: none;
 }
@@ -198,11 +165,11 @@ body::before {
   transform: translateX(-50%) translateY(0);
   width: 210px;
   height: 0;
-  background: #fefcf7;
+  background: #1f1a14;
   border-radius: 4px;
   z-index: 1;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(61, 53, 41, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   transition: height 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s;
 }
 .envelope-scene.opened .letter {
