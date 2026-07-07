@@ -710,6 +710,33 @@ if (roomId) {
 
   pollServer();
   setInterval(pollServer, 3000);
+  loadReview();
+}
+
+// ========== 加载本月回顾 ==========
+function loadReview() {
+  var url = API_BASE + '/api/room/' + roomId + '/review';
+  if (roomToken) url += '?token=' + roomToken;
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success || !data.review) return;
+      var rv = data.review;
+      var card = document.getElementById('reviewCard');
+      if (!card) return;
+      document.getElementById('reviewMonth').textContent = rv.monthLabel;
+      var statsHtml = '';
+      var s = rv.stats;
+      if (s.glimmerCount > 0) statsHtml += '<div class="review-stat-item"><div class="review-stat-num">' + s.glimmerCount + '</div><div class="review-stat-label">微光</div></div>';
+      if (s.whisperCount > 0) statsHtml += '<div class="review-stat-item"><div class="review-stat-num">' + s.whisperCount + '</div><div class="review-stat-label">悄悄话</div></div>';
+      if (s.photoCount > 0) statsHtml += '<div class="review-stat-item"><div class="review-stat-num">' + s.photoCount + '</div><div class="review-stat-label">此刻</div></div>';
+      if (s.questionCount > 0) statsHtml += '<div class="review-stat-item"><div class="review-stat-num">' + s.questionCount + '</div><div class="review-stat-label">问答</div></div>';
+      if (statsHtml === '') statsHtml = '<div class="review-stat-item"><div class="review-stat-num">0</div><div class="review-stat-label">本月记录</div></div>';
+      document.getElementById('reviewStats').innerHTML = statsHtml;
+      document.getElementById('reviewSummary').textContent = rv.summary;
+      card.style.display = 'block';
+    })
+    .catch(function() {});
 }
 
 // ========== 我的微光编辑 ==========
