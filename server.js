@@ -2,6 +2,7 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const multer = require('multer');
 const app = express();
 const PORT = 3000;
@@ -780,6 +781,338 @@ app.get('/api/room/:roomId/review', (req, res) => {
   }
 
   res.json({ success: true, review: review });
+});
+
+// ========== 用户系统 · 数据存储 ==========
+// 用户数据与 token 都存 JSON 文件，与房间数据同目录
+const USERS_FILE = path.join(DATA_DIR, 'users.json');
+const TOKENS_FILE = path.join(DATA_DIR, 'tokens.json');
+
+function readUsers() {
+  if (!fs.existsSync(USERS_FILE)) return {};
+  try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf-8')); }
+  catch (e) { return {}; }
+}
+
+function writeUsers(data) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+function readTokens() {
+  if (!fs.existsSync(TOKENS_FILE)) return {};
+  try { return JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf-8')); }
+  catch (e) { return {}; }
+}
+
+function writeTokens(data) {
+  fs.writeFileSync(TOKENS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+// 密码哈希：sha256 + 固定 salt（demo 阶段足够，生产环境应换 bcrypt）
+const PASSWORD_SALT = 'manmanshuo_2026_salt';
+function hashPassword(pwd) {
+  return crypto.createHash('sha256').update(pwd + PASSWORD_SALT).digest('hex');
+}
+
+function generateUserId() {
+  return 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+// ========== Token 机制 ==========
+// 同时服务于房间接口与认证接口，补回之前丢失的 generateToken/validateToken
+function generateToken(userId) {
+  const token = 'tk_' + crypto.randomBytes(18).toString('hex');
+  const tokens = readTokens();
+  tokens[token] = {
+    userId: userId,
+    createdAt: Date.now(),
+    expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 天
+  };
+  writeTokens(tokens);
+  return token;
+}
+
+function validateToken(token) {
+  if (!token) return null;
+  const tokens = readTokens();
+  const record = tokens[token];
+  if (!record) return null;
+  if (Date.now() > record.expiresAt) {
+    delete tokens[token];
+    writeTokens(tokens);
+    return null;
+  }
+  return record.userId;
+}
+
+// 从请求中提取 userId（query.token 或 header Authorization）
+function getUserIdFromReq(req) {
+  let token = '';
+  if (req.query && req.query.token) token = req.query.token;
+  else if (req.headers && req.headers.authorization) {
+    token = req.headers.authorization.replace(/^Bearer\s+/i, '');
+  } else if (req.body && req.body.token) {
+    token = req.body.token;
+  }
+  return validateToken(token);
+}
+
+// ========== API: 注册 ==========
+app.post('/api/auth/register', (req, res) => {
+  const { username, password, nickname } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, error: '用户名和密码不能为空' });
+  }
+  if (username.length < 3 || username.length > 20) {
+    return res.status(400).json({ success: false, error: '用户名长度需 3-20 位' });
+  }
+  if (password.length < 6) {
+    return res.status(400).json({ success: false, error: '密码至少 6 位' });
+  }
+
+  const users = readUsers();
+  // 用户名大小写不敏感
+  const existed = Object.values(users).find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (existed) {
+    return res.status(409).json({ success: false, error: '这个名字已经有人用了' });
+  }
+
+  const userId = generateUserId();
+  const nick = (nickname || username).trim().slice(0, 12);
+  users[userId] = {
+    userId: userId,
+    username: username.trim(),
+    passwordHash: hashPassword(password),
+    nickname: nick,
+    avatar: '',           // 空则前端用昵称首字
+    boundRooms: [],
+    createdAt: new Date().toISOString()
+  };
+  writeUsers(users);
+
+  const token = generateToken(userId);
+  res.json({
+    success: true,
+    token: token,
+    user: {
+      userId: userId,
+      username: users[userId].username,
+      nickname: users[userId].nickname,
+      avatar: users[userId].avatar,
+      boundRooms: []
+    }
+  });
+});
+
+// ========== API: 登录 ==========
+app.post('/api/auth/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ success: false, error: '用户名和密码不能为空' });
+  }
+
+  const users = readUsers();
+  const user = Object.values(users).find(u => u.username.toLowerCase() === username.toLowerCase());
+  if (!user || user.passwordHash !== hashPassword(password)) {
+    return res.status(401).json({ success: false, error: '用户名或密码不对' });
+  }
+
+  const token = generateToken(user.userId);
+  res.json({
+    success: true,
+    token: token,
+    user: {
+      userId: user.userId,
+      username: user.username,
+      nickname: user.nickname,
+      avatar: user.avatar,
+      boundRooms: user.boundRooms || []
+    }
+  });
+});
+
+// ========== API: 获取当前用户信息 ==========
+app.get('/api/auth/me', (req, res) => {
+  const userId = getUserIdFromReq(req);
+  if (!userId) return res.status(401).json({ success: false, error: '未登录或登录已过期' });
+
+  const users = readUsers();
+  const user = users[userId];
+  if (!user) return res.status(404).json({ success: false, error: '用户不存在' });
+
+  res.json({
+    success: true,
+    user: {
+      userId: user.userId,
+      username: user.username,
+      nickname: user.nickname,
+      avatar: user.avatar,
+      boundRooms: user.boundRooms || [],
+      createdAt: user.createdAt
+    }
+  });
+});
+
+// ========== API: 修改个人资料（昵称/头像） ==========
+app.post('/api/auth/profile', (req, res) => {
+  const userId = getUserIdFromReq(req);
+  if (!userId) return res.status(401).json({ success: false, error: '未登录或登录已过期' });
+
+  const users = readUsers();
+  const user = users[userId];
+  if (!user) return res.status(404).json({ success: false, error: '用户不存在' });
+
+  const { nickname, avatar } = req.body;
+  if (typeof nickname === 'string' && nickname.trim()) {
+    user.nickname = nickname.trim().slice(0, 12);
+  }
+  if (typeof avatar === 'string') {
+    user.avatar = avatar.trim().slice(0, 4); // emoji 或单字符
+  }
+  users[userId] = user;
+  writeUsers(users);
+
+  res.json({
+    success: true,
+    user: {
+      userId: user.userId,
+      username: user.username,
+      nickname: user.nickname,
+      avatar: user.avatar,
+      boundRooms: user.boundRooms || []
+    }
+  });
+});
+
+// ========== API: 修改密码 ==========
+app.post('/api/auth/password', (req, res) => {
+  const userId = getUserIdFromReq(req);
+  if (!userId) return res.status(401).json({ success: false, error: '未登录或登录已过期' });
+
+  const { oldPassword, newPassword } = req.body;
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({ success: false, error: '请填写原密码和新密码' });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ success: false, error: '新密码至少 6 位' });
+  }
+
+  const users = readUsers();
+  const user = users[userId];
+  if (!user) return res.status(404).json({ success: false, error: '用户不存在' });
+
+  if (user.passwordHash !== hashPassword(oldPassword)) {
+    return res.status(401).json({ success: false, error: '原密码不对' });
+  }
+
+  user.passwordHash = hashPassword(newPassword);
+  users[userId] = user;
+  writeUsers(users);
+  res.json({ success: true });
+});
+
+// ========== API: 登出 ==========
+app.post('/api/auth/logout', (req, res) => {
+  let token = '';
+  if (req.query.token) token = req.query.token;
+  else if (req.headers.authorization) token = req.headers.authorization.replace(/^Bearer\s+/i, '');
+  else if (req.body && req.body.token) token = req.body.token;
+
+  if (token) {
+    const tokens = readTokens();
+    if (tokens[token]) {
+      delete tokens[token];
+      writeTokens(tokens);
+    }
+  }
+  res.json({ success: true });
+});
+
+// ========== API: 绑定房间到当前用户 ==========
+app.post('/api/room/:roomId/bind', (req, res) => {
+  const userId = getUserIdFromReq(req);
+  if (!userId) return res.status(401).json({ success: false, error: '未登录或登录已过期' });
+
+  const roomId = req.params.roomId.toUpperCase();
+  const roomData = readRoom(roomId);
+  if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+
+  const users = readUsers();
+  const user = users[userId];
+  if (!user) return res.status(404).json({ success: false, error: '用户不存在' });
+
+  if (!user.boundRooms) user.boundRooms = [];
+  if (!user.boundRooms.includes(roomId)) {
+    user.boundRooms.push(roomId);
+    users[userId] = user;
+    writeUsers(users);
+  }
+
+  res.json({ success: true, boundRooms: user.boundRooms });
+});
+
+// ========== API: 个人中心 · 我的房间列表 + 跨房间汇总 ==========
+app.get('/api/user/rooms', (req, res) => {
+  const userId = getUserIdFromReq(req);
+  if (!userId) return res.status(401).json({ success: false, error: '未登录或登录已过期' });
+
+  const users = readUsers();
+  const user = users[userId];
+  if (!user) return res.status(404).json({ success: false, error: '用户不存在' });
+
+  const boundRooms = user.boundRooms || [];
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthStart = new Date(year, month, 1).getTime();
+  const monthEnd = new Date(year, month + 1, 1).getTime();
+
+  let totalGlimmer = 0, totalWhisper = 0, totalPhoto = 0, totalQuestion = 0;
+  let monthGlimmer = 0, monthWhisper = 0, monthPhoto = 0, monthQuestion = 0;
+
+  const rooms = boundRooms.map(roomId => {
+    const rd = readRoom(roomId);
+    if (!rd) return { roomId: roomId, exists: false };
+
+    const gCount = (rd.glimmerEntries || []).length;
+    const wCount = (rd.whisperRecords || []).length;
+    const pCount = (rd.photoHistory || []).length;
+    const qCount = (rd.dailyQuestionHistory || []).length;
+    totalGlimmer += gCount; totalWhisper += wCount; totalPhoto += pCount; totalQuestion += qCount;
+
+    const mg = (rd.glimmerEntries || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd).length;
+    const mw = (rd.whisperRecords || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd).length;
+    const mp = (rd.photoHistory || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd).length;
+    const mq = (rd.dailyQuestionHistory || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd).length;
+    monthGlimmer += mg; monthWhisper += mw; monthPhoto += mp; monthQuestion += mq;
+
+    // 找最近互动时间
+    const allTs = [].concat(
+      (rd.glimmerEntries || []).map(e => e.timestamp || 0),
+      (rd.whisperRecords || []).map(e => e.timestamp || 0),
+      (rd.photoHistory || []).map(e => e.timestamp || 0),
+      (rd.dailyQuestionHistory || []).map(e => e.timestamp || 0)
+    );
+    const lastTs = allTs.length > 0 ? Math.max.apply(null, allTs) : 0;
+
+    return {
+      roomId: roomId,
+      exists: true,
+      createdAt: rd.createdAt,
+      lastInteractTs: lastTs,
+      counts: { glimmer: gCount, whisper: wCount, photo: pCount, question: qCount }
+    };
+  });
+
+  res.json({
+    success: true,
+    rooms: rooms,
+    totals: {
+      all: { glimmer: totalGlimmer, whisper: totalWhisper, photo: totalPhoto, question: totalQuestion },
+      month: { glimmer: monthGlimmer, whisper: monthWhisper, photo: monthPhoto, question: monthQuestion }
+    },
+    monthLabel: year + '年' + (month + 1) + '月'
+  });
 });
 
 // ========== START ==========
