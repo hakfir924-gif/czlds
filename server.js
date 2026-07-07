@@ -79,8 +79,118 @@ const dailyQuestionPool = [
   '如果明天世界末日，今天会怎么过？',
   '最近你发现Ta的一个新优点是什么？',
   '今天想感谢Ta的一件事是什么？',
-  '猜猜Ta现在在做什么？'
+  '猜猜Ta现在在做什么？',
+  // ===== 情绪类 =====
+  '今天哪个瞬间让你觉得心最静？',
+  '最近一次感到不安是什么时候？怎么度过的？',
+  '用一首歌的名字形容你此刻的心情',
+  '今天有没有一件事让你改变了原来的想法？',
+  '最近有什么事让你觉得"还好有Ta在"？',
+  // ===== 回忆类 =====
+  '你们之间最让你怀念的一个瞬间是什么？',
+  '还记得你们第一次吵架是为了什么吗？',
+  'Ta做过最让你意外的一件事是什么？',
+  '你最想重来一次的一天是哪天？为什么？',
+  '你们的合影里，你最喜欢哪一张？为什么？',
+  'Ta说过哪句话你一直记到现在？',
+  '有没有一个属于你们的"秘密地点"？',
+  '你第一次意识到喜欢Ta是什么时候？',
+  // ===== 未来类 =====
+  '五年后的你们会在哪里、在做什么？',
+  '如果给你们的关系定一个小目标，会是什么？',
+  '下个季节你们最想一起完成的一件事？',
+  '你最想和Ta一起学会的一项技能是什么？',
+  '如果你们合开一家店，会开什么店？',
+  '你希望十年后Ta眼中的你是什么样？',
+  '下一个纪念日你想怎么过？',
+  // ===== 日常类 =====
+  '今天有没有一个细节让你觉得生活挺好的？',
+  '最近有什么小事让你笑了很久？',
+  '你今天最想分享给Ta的一个画面是什么？',
+  '此刻窗外是什么样的？描述给Ta听',
+  '今天有没有听到一首想分享给Ta的歌？',
+  '你最近在读什么、看什么？想推荐给Ta吗？',
+  '今天有没有一个"差点忘了但幸好想起"的瞬间？',
+  // ===== 深度类 =====
+  '你觉得Ta最近最需要的是什么？',
+  '有没有一件事你一直想告诉Ta但没说出口？',
+  '你希望Ta以后多做什么、少做什么？',
+  '你觉得你们之间最需要被理解的是什么？',
+  '如果用一种植物形容Ta，会是什么？为什么？',
+  'Ta身上哪个习惯你最想学过来？',
+  '你最近一次因为Ta感到幸福是什么时候？',
+  '你觉得"被爱着"是什么感觉？描述一下',
+  '有没有一个Ta不知道的、关于你的小事？',
+  '你最想对未来的你们说的一句话？'
 ];
+
+// 每日话题分类（按类别轮换，避免连续同类）
+const dailyQuestionCategories = ['情绪', '回忆', '未来', '日常', '深度'];
+
+// ========== 拍照主题池 ==========
+const photoThemePool = [
+  '拍一张你此刻看到的光',
+  '拍桌上最旧的一样东西',
+  '拍你手边最显眼的颜色',
+  '拍窗外此刻的天空',
+  '拍你今天穿的鞋',
+  '拍一杯你正在喝的东西',
+  '拍一个你舍不得扔的小物件',
+  '拍此刻你坐的地方',
+  '拍一张代表今天心情的影子',
+  '拍你床头或桌角的一样东西',
+  '拍你今天翻到的最后一页',
+  '拍一个让你想起Ta的细节',
+  '拍此刻离你最近的一本书',
+  '拍一样你用了很久的东西',
+  '拍此刻最安静的一个角落'
+];
+
+// ========== AI 预留接口 ==========
+// 未来接入云端 AI 时，只需在此函数内调用大模型 API
+// 当前版本使用本地模板生成，零隐私风险
+const AI_CONFIG = {
+  enabled: false,            // 未来接入时改为 true
+  apiKey: '',                // 未来填入 API Key
+  endpoint: ''               // 未来填入 API 地址
+};
+
+function generateContent(type, context) {
+  // 预留：当 AI_CONFIG.enabled 为 true 时，调用云端 AI 生成
+  // 当前：使用本地模板池
+  if (AI_CONFIG.enabled && AI_CONFIG.apiKey) {
+    // TODO: 未来实现云端 AI 调用
+    // return callAI(type, context);
+  }
+  return null; // 返回 null 表示用本地模板
+}
+
+// 按分类获取题目索引范围（与 dailyQuestionPool 中的注释分类对应）
+function getQuestionStartIndex(category) {
+  // 前 15 题为原始题（无分类），之后按 5 类排列
+  const ranges = {
+    '情绪': { start: 15, end: 20 },
+    '回忆': { start: 20, end: 28 },
+    '未来': { start: 28, end: 35 },
+    '日常': { start: 35, end: 42 },
+    '深度': { start: 42, end: 55 }
+  };
+  return ranges[category] || { start: 0, end: 15 };
+}
+
+// 每日切换拍照主题
+function refreshPhotoTheme(roomData) {
+  const today = new Date().toDateString();
+  if (roomData.photoThemeDate !== today) {
+    let newTheme;
+    do {
+      newTheme = photoThemePool[Math.floor(Math.random() * photoThemePool.length)];
+    } while (newTheme === roomData.currentPhotoTheme && photoThemePool.length > 1);
+    roomData.currentPhotoTheme = newTheme;
+    roomData.photoThemeDate = today;
+  }
+  return roomData;
+}
 
 // ========== 默契挑战 问题池 ==========
 const challengePool = [
@@ -164,6 +274,9 @@ app.post('/api/room/create', (req, res) => {
       ta: { photoUrl: '', note: '', uploaded: false, timestamp: 0 }
     },
     photoHistory: [],
+    currentPhotoTheme: photoThemePool[Math.floor(Math.random() * photoThemePool.length)],
+    photoThemeDate: new Date().toDateString(),
+    dailyQuestionCategoryIndex: 0,
     version: 0
   };
   writeRoom(roomId, roomData);
@@ -280,10 +393,33 @@ app.post('/api/room/:roomId/question', (req, res) => {
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
 
-  let newQ;
-  do {
-    newQ = dailyQuestionPool[Math.floor(Math.random() * dailyQuestionPool.length)];
-  } while (newQ === roomData.dailyQuestion && dailyQuestionPool.length > 1);
+  // 按分类轮换选题，避免连续同类 + 历史去重
+  const askedQuestions = new Set(roomData.dailyQuestionHistory.map(h => h.question));
+  askedQuestions.add(roomData.dailyQuestion);
+  
+  let newQ = null;
+  const catIdx = (roomData.dailyQuestionCategoryIndex || 0) % dailyQuestionCategories.length;
+  const currentCat = dailyQuestionCategories[catIdx];
+  
+  // 尝试 AI 生成（预留接口，当前返回 null）
+  const aiResult = generateContent('dailyQuestion', { category: currentCat, history: roomData.dailyQuestionHistory });
+  if (aiResult) {
+    newQ = aiResult;
+  } else {
+    // 本地模板：从当前分类中选题，优先选没问过的
+    const startIndex = getQuestionStartIndex(currentCat);
+    const catQuestions = dailyQuestionPool.slice(startIndex.start, startIndex.end);
+    const fresh = catQuestions.filter(q => !askedQuestions.has(q));
+    if (fresh.length > 0) {
+      newQ = fresh[Math.floor(Math.random() * fresh.length)];
+    } else {
+      // 当前分类全问过了，从全池里选没问过的
+      const allFresh = dailyQuestionPool.filter(q => !askedQuestions.has(q));
+      newQ = allFresh.length > 0 ? allFresh[Math.floor(Math.random() * allFresh.length)] : catQuestions[Math.floor(Math.random() * catQuestions.length)];
+    }
+  }
+  
+  roomData.dailyQuestionCategoryIndex = catIdx + 1;
 
   // Save current (if both answered) to history
   if (roomData.dailyQuestionAnswers.me && roomData.dailyQuestionAnswers.ta) {
@@ -557,6 +693,9 @@ app.get('/api/room/:roomId/poll', (req, res) => {
   const since = parseInt(req.query.since) || 0;
   const role = req.query.role || 'me';
 
+  // 每日自动刷新拍照主题
+  refreshPhotoTheme(roomData);
+
   // Return full room data if there are updates
   const hasUpdates = roomData.version > since;
 
@@ -576,8 +715,71 @@ app.get('/api/room/:roomId/poll', (req, res) => {
     truthShares: roomData.truthShares,
     truthHistory: roomData.truthHistory,
     photoExchange: roomData.photoExchange,
-    photoHistory: roomData.photoHistory || []
+    photoHistory: roomData.photoHistory || [],
+    currentPhotoTheme: roomData.currentPhotoTheme || ''
   });
+});
+
+// ========== API: 月度回顾 ==========
+app.get('/api/room/:roomId/review', (req, res) => {
+  const roomId = req.params.roomId.toUpperCase();
+  const roomData = readRoom(roomId);
+  if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const monthStart = new Date(year, month, 1).getTime();
+  const monthEnd = new Date(year, month + 1, 1).getTime();
+
+  // 聚合本月各类记录
+  const monthGlimmers = (roomData.glimmerEntries || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd);
+  const monthWhispers = (roomData.whisperRecords || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd);
+  const monthPhotos = (roomData.photoHistory || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd);
+  const monthQuestions = (roomData.dailyQuestionHistory || []).filter(e => e.timestamp >= monthStart && e.timestamp < monthEnd);
+
+  // 统计 glimmer 情绪词频
+  const moodMap = {};
+  monthGlimmers.forEach(e => {
+    if (e.status) moodMap[e.status] = (moodMap[e.status] || 0) + 1;
+  });
+  const topMoods = Object.entries(moodMap).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([mood, count]) => ({ mood, count }));
+
+  // 统计双方互动条数
+  const meCount = monthGlimmers.filter(e => e.role === 'me').length + monthWhispers.filter(e => e.role === 'me').length;
+  const taCount = monthGlimmers.filter(e => e.role === 'ta').length + monthWhispers.filter(e => e.role === 'ta').length;
+
+  const review = {
+    monthLabel: year + '年' + (month + 1) + '月',
+    stats: {
+      glimmerCount: monthGlimmers.length,
+      whisperCount: monthWhispers.length,
+      photoCount: monthPhotos.length,
+      questionCount: monthQuestions.length,
+      totalInteractions: monthGlimmers.length + monthWhispers.length + monthPhotos.length + monthQuestions.length
+    },
+    topMoods: topMoods,
+    balance: { me: meCount, ta: taCount },
+    photoThumbnails: monthPhotos.slice(0, 4).map(p => ({ me: p.me.photoUrl, ta: p.ta.photoUrl })),
+    summary: ''
+  };
+
+  // 生成简要文字总结（本地模板，预留 AI 接口）
+  const aiSummary = generateContent('review', review);
+  if (aiSummary) {
+    review.summary = aiSummary;
+  } else {
+    const total = review.stats.totalInteractions;
+    const moodText = topMoods.length > 0 ? '高频情绪：' + topMoods.map(m => m.mood).join('、') : '互动还在积累中';
+    const balanceText = meCount > 0 && taCount > 0
+      ? (Math.abs(meCount - taCount) <= Math.max(1, total * 0.15) ? '你们互动得很均衡' : (meCount > taCount ? '这个月你更主动一些' : '这个月Ta更主动一些'))
+      : '继续记录，让回忆更丰富';
+    review.summary = total === 0
+      ? '这个月还没有记录，开始留下你们的痕迹吧'
+      : '本月共记录 ' + total + ' 条互动。' + moodText + '。' + balanceText + '。';
+  }
+
+  res.json({ success: true, review: review });
 });
 
 // ========== START ==========

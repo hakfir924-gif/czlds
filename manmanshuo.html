@@ -133,6 +133,47 @@ body::before {
   margin: 0 auto;
 }
 
+/* ========== 本月回顾卡片 ========== */
+.review-card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  padding: 16px 18px;
+  margin: 0 0 16px;
+  animation: fadeInUp 0.8s ease 0.3s both;
+}
+.review-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.review-title {
+  font-family: var(--font-heading);
+  font-size: 0.9rem; font-weight: 700; color: var(--ink);
+  letter-spacing: 0.02em;
+}
+.review-month {
+  font-size: 0.72rem; color: var(--accent); font-weight: 600;
+  background: var(--accent-light); padding: 3px 10px; border-radius: 100px;
+}
+.review-stats {
+  display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.review-stat-item {
+  display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 60px;
+}
+.review-stat-num {
+  font-family: var(--font-heading);
+  font-size: 1.4rem; font-weight: 700; color: var(--accent);
+  line-height: 1.2;
+}
+.review-stat-label {
+  font-size: 0.68rem; color: var(--muted); margin-top: 2px;
+}
+.review-summary {
+  font-size: 0.82rem; color: var(--ink2); line-height: 1.6;
+  padding-top: 10px; border-top: 1px solid var(--rule);
+}
+
 /* ========== GLIMMER ========== */
 .glimmer-section {
   padding: 0 0 16px;
@@ -489,6 +530,16 @@ body::before {
   <div class="sign-area" id="signArea">
     <div class="sign-type-tag" id="signType">一句话</div>
     <div class="sign-text" id="signText">今天不用很完美，今天你已经在对方心里了。</div>
+  </div>
+
+  <!-- ===== 本月回顾 ===== -->
+  <div class="review-card" id="reviewCard" style="display:none;">
+    <div class="review-header">
+      <span class="review-title">本月回顾</span>
+      <span class="review-month" id="reviewMonth"></span>
+    </div>
+    <div class="review-stats" id="reviewStats"></div>
+    <div class="review-summary" id="reviewSummary"></div>
   </div>
 
   <!-- ===== 现在的我 + 现在的Ta ===== -->

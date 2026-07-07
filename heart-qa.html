@@ -244,6 +244,12 @@ body::before {
 
 /* ========== 此刻予你 ========== */
 .moment-section { text-align: center; padding: 12px 0; }
+.moment-theme-hint {
+  font-size: 0.8rem; color: var(--accent); font-weight: 600;
+  margin-bottom: 12px; padding: 8px 16px;
+  background: var(--accent-light); border-radius: 100px;
+  display: inline-block; letter-spacing: 0.02em;
+}
 .moment-upload-wrap {
   display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
@@ -512,6 +518,7 @@ var photoMe = { photoUrl: '', note: '', uploaded: false, timestamp: 0 };
 var photoTa = { photoUrl: '', note: '', uploaded: false, timestamp: 0 };
 var photoPreviewUrl = '';
 var photoHistory = [];
+var currentPhotoTheme = '';
 var momentHistoryOpen = false;
 
 function escapeHtml(s) {
@@ -945,6 +952,7 @@ function renderPhotoExchange() {
   } else {
     // Upload state - show upload area
     el.innerHTML = '<div class="moment-section">' +
+      (currentPhotoTheme ? '<div class="moment-theme-hint">今日主题：' + escapeHtml(currentPhotoTheme) + '</div>' : '') +
       '<div class="moment-upload-wrap">' +
       '<div class="moment-upload-area" onclick="document.getElementById(\'momentFile\').click()">' +
       '<div class="upload-icon">📷</div>' +
@@ -1133,6 +1141,9 @@ function pollServer() {
         if (data.photoHistory) {
           photoHistory = data.photoHistory;
         }
+        if (data.currentPhotoTheme) {
+          currentPhotoTheme = data.currentPhotoTheme;
+        }
         if (photoChanged) renderPhotoExchange();
       }
 
@@ -1183,6 +1194,9 @@ function initFromServer(cb) {
       }
       if (data.photoHistory) {
         photoHistory = data.photoHistory;
+      }
+      if (data.currentPhotoTheme) {
+        currentPhotoTheme = data.currentPhotoTheme;
       }
       var newHistory = [];
       (data.dailyQuestionHistory || []).forEach(function(h) { h.type = 'daily'; newHistory.push(h); });
