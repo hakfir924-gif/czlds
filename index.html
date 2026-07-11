@@ -201,6 +201,37 @@ body {
 }
 
 /* ========== MODAL ========== */
+/* ========== ME ENTRY (top-right) ========== */
+.me-entry {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 50;
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  padding: 7px 14px;
+  border-radius: 100px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.me-entry:hover { border-color: var(--accent); color: var(--accent); }
+.me-entry .me-av {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -443,6 +474,11 @@ body {
 <div class="float-dot"></div>
 <div class="float-dot"></div>
 
+<!-- Top-right entry: 我的 / 登录 -->
+<a class="me-entry" id="meEntry" href="./login.html">
+  <span>我的</span>
+</a>
+
 <div class="page">
 
   <!-- Brand -->
@@ -541,6 +577,40 @@ body {
 // ========== API ==========
 var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'http://' + location.hostname + ':3000';
 
+// 已登录则把右上角入口指向个人中心
+var mmToken = localStorage.getItem('mm_token');
+if (mmToken) {
+  var mmUser = null;
+  try { mmUser = JSON.parse(localStorage.getItem('mm_user') || 'null'); } catch(e) {}
+  var meEntry = document.getElementById('meEntry');
+  if (meEntry) {
+    meEntry.href = './profile.html';
+    if (mmUser && mmUser.nickname) {
+      var av = mmUser.avatar || mmUser.nickname.charAt(0);
+      meEntry.innerHTML = '<span class="me-av">' + av + '</span><span>' + mmUser.nickname + '</span>';
+    }
+  }
+  // 校验 token 是否仍有效
+  fetch(API_BASE + '/api/auth/me?token=' + encodeURIComponent(mmToken))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success) {
+        localStorage.removeItem('mm_token'); localStorage.removeItem('mm_user');
+        var e2 = document.getElementById('meEntry');
+        if (e2) { e2.href = './login.html'; e2.innerHTML = '<span>我的</span>'; }
+      }
+    })
+    .catch(function() {});
+}
+
+// 绑定房间到当前账号（已登录时）
+function bindRoomIfLogin(roomId) {
+  if (!mmToken) return;
+  fetch(API_BASE + '/api/room/' + roomId + '/bind?token=' + encodeURIComponent(mmToken), {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+  }).catch(function() {});
+}
+
 // ========== Modal control ==========
 function openModal(type) {
   if (type === 'invite') {
@@ -622,6 +692,7 @@ function tryEnter() {
       btn.classList.remove('success');
       return;
     }
+    bindRoomIfLogin(key);
     goToSpace(key, 'ta');
   })
   .catch(function() {
@@ -656,6 +727,7 @@ function createInvite() {
   .then(function(r) { return r.json(); })
   .then(function(data) {
     inviteRoomId = data.roomId;
+    bindRoomIfLogin(inviteRoomId);
     var inviteToken = data.token || '';
     document.getElementById('genKey').textContent = inviteRoomId;
     document.getElementById('inviteText').textContent =
