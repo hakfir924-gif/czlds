@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>慢慢说 — 个人中心</title>
+<style>
+@font-face {
+  font-family: 'WorkSans';
+  src: url('./_shared/fonts/WorkSans-Regular.ttf') format('truetype');
+  font-weight: 400; font-style: normal;
+}
+@font-face {
+  font-family: 'WorkSans';
+  src: url('./_shared/fonts/WorkSans-Bold.ttf') format('truetype');
+  font-weight: 700; font-style: normal;
+}
+
+:root {
+  --bg: #14110d;
+  --bg2: #1c1813;
+  --card: #1f1a14;
+  --ink: #ede4d3;
+  --ink2: #b8ac97;
+  --muted: #7a7163;
+  --rule: #2e281f;
+  --accent: #d4a373;
+  --accent-soft: #b8895c;
+  --accent-light: #2a2218;
+  --accent2: #6f8268;
+  --danger: #c97d6d;
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --font-heading: 'WorkSans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+  --font-body: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg); color: var(--ink);
+  line-height: 1.7; min-height: 100vh;
+  -webkit-font-smoothing: antialiased; padding-bottom: 80px;
+}
+
+.page { max-width: 640px; margin: 0 auto; padding: 0 20px; }
+
+.top-bar {
+  display: flex; align-items: center;
+  padding: 18px 0 14px; position: sticky; top: 0;
+  background: var(--bg); z-index: 10;
+}
+.top-bar .back {
+  font-size: 1.3rem; color: var(--ink2); cursor: pointer;
+  width: 32px; text-align: left; text-decoration: none;
+}
+.top-bar .title {
+  font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700;
+  color: var(--ink); letter-spacing: 0.03em; flex: 1;
+  text-align: center; padding-right: 32px;
+}
+
+.user-card {
+  background: var(--card); border: 1px solid var(--rule);
+  border-radius: var(--radius-lg); padding: 24px 20px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 16px;
+  animation: fadeInUp 0.6s ease 0.1s both;
+}
+.user-avatar {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; font-weight: 700; font-family: var(--font-heading); flex-shrink: 0;
+}
+.user-info { flex: 1; min-width: 0; }
+.user-nickname { font-size: 1.15rem; font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.user-username { font-size: 0.78rem; color: var(--muted); font-family: var(--font-heading); }
+.edit-btn {
+  padding: 7px 16px; font-size: 0.78rem; font-weight: 600;
+  border: 1px solid var(--rule); border-radius: 100px;
+  background: transparent; color: var(--ink2); cursor: pointer;
+  transition: all 0.3s ease; font-family: var(--font-body);
+}
+.edit-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.section-title {
+  font-family: var(--font-heading); font-size: 0.82rem; font-weight: 700;
+  color: var(--muted); letter-spacing: 0.08em;
+  margin: 8px 0 12px; padding-left: 4px;
+}
+
+.stats-card {
+  background: var(--card); border: 1px solid var(--rule);
+  border-radius: var(--radius-md); padding: 18px 16px;
+  margin-bottom: 16px; animation: fadeInUp 0.6s ease 0.2s both;
+}
+.stats-month {
+  font-size: 0.74rem; color: var(--accent); font-weight: 600;
+  background: var(--accent-light); padding: 3px 10px;
+  border-radius: 100px; display: inline-block; margin-bottom: 12px;
+}
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat-item { text-align: center; }
+.stat-num {
+  font-family: var(--font-heading); font-size: 1.5rem; font-weight: 700;
+  color: var(--accent); line-height: 1.2;
+}
+.stat-label { font-size: 0.66rem; color: var(--muted); margin-top: 2px; }
+.stats-total {
+  margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule);
+  font-size: 0.78rem; color: var(--ink2); text-align: center;
+}
+
+.room-card {
+  background: var(--card); border: 1px solid var(--rule);
+  border-radius: var(--radius-md); padding: 16px 18px;
+  margin-bottom: 12px; cursor: pointer; transition: all 0.3s ease;
+  animation: fadeInUp 0.5s ease both;
+}
+.room-card:hover { border-color: var(--accent-soft); transform: translateY(-1px); }
+.room-card-head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+}
+.room-id {
+  font-family: var(--font-heading); font-size: 1rem; font-weight: 700;
+  color: var(--ink); letter-spacing: 0.05em;
+}
+.room-time { font-size: 0.7rem; color: var(--muted); }
+.room-counts { display: flex; gap: 14px; flex-wrap: wrap; }
+.room-count-item { font-size: 0.74rem; color: var(--ink2); }
+.room-count-item span { color: var(--accent); font-weight: 700; font-family: var(--font-heading); }
+
+.empty-state {
+  background: var(--card); border: 1px dashed var(--rule);
+  border-radius: var(--radius-md); padding: 32px 20px;
+  text-align: center; color: var(--muted); font-size: 0.86rem; margin-bottom: 16px;
+}
+
+.action-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.action-btn {
+  flex: 1; padding: 13px; font-size: 0.88rem; font-weight: 600;
+  border: none; border-radius: 100px; cursor: pointer;
+  transition: all 0.3s ease; font-family: var(--font-body);
+}
+.action-btn.primary { background: var(--accent); color: #fff; }
+.action-btn.primary:hover { background: var(--accent-soft); }
+.action-btn.ghost { background: var(--card); color: var(--ink2); border: 1px solid var(--rule); }
+.action-btn.ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+.account-list {
+  background: var(--card); border: 1px solid var(--rule);
+  border-radius: var(--radius-md); overflow: hidden;
+  animation: fadeInUp 0.6s ease 0.3s both;
+}
+.account-item {
+  padding: 14px 18px; display: flex; justify-content: space-between;
+  align-items: center; cursor: pointer; transition: background 0.3s ease;
+  border-bottom: 1px solid var(--rule);
+}
+.account-item:last-child { border-bottom: none; }
+.account-item:hover { background: var(--bg2); }
+.account-item .label { font-size: 0.88rem; color: var(--ink); }
+.account-item .arrow { color: var(--muted); font-size: 0.9rem; }
+.account-item.danger .label { color: var(--danger); }
+
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px); z-index: 100; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; transition: opacity 0.3s ease;
+}
+.modal-overlay.active { display: flex; opacity: 1; }
+.modal {
+  background: var(--bg); border: 1px solid var(--rule);
+  border-radius: var(--radius-lg); padding: 28px 24px;
+  width: 100%; max-width: 380px; box-shadow: var(--shadow-lg);
+  transform: translateY(16px) scale(0.96);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-overlay.active .modal { transform: translateY(0) scale(1); }
+.modal-title {
+  font-family: var(--font-heading); font-size: 1.1rem; font-weight: 700;
+  color: var(--ink); margin-bottom: 18px; text-align: center;
+}
+.modal-field { margin-bottom: 14px; }
+.modal-field-label { display: block; font-size: 0.76rem; color: var(--ink2); margin-bottom: 6px; }
+.modal-input {
+  width: 100%; padding: 12px 14px; font-size: 0.9rem;
+  font-family: var(--font-body); color: var(--ink);
+  background: var(--bg2); border: 1px solid var(--rule); border-radius: var(--radius-sm);
+}
+.modal-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.12); }
+.modal-input::placeholder { color: var(--muted); opacity: 0.5; }
+.modal-hint { font-size: 0.76rem; color: var(--muted); min-height: 16px; margin-bottom: 12px; }
+.modal-hint.error { color: var(--danger); }
+.modal-btn-row { display: flex; gap: 10px; margin-top: 8px; }
+.modal-btn {
+  flex: 1; padding: 12px; font-size: 0.88rem; font-weight: 600;
+  border: none; border-radius: 100px; cursor: pointer; font-family: var(--font-body);
+}
+.modal-btn.primary { background: var(--accent); color: #fff; }
+.modal-btn.primary:hover { background: var(--accent-soft); }
+.modal-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--rule); }
+
+.toast {
+  position: fixed; bottom: 30px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--card); color: var(--ink);
+  padding: 12px 24px; border-radius: 100px; border: 1px solid var(--rule);
+  font-size: 0.84rem; box-shadow: var(--shadow-md);
+  opacity: 0; transition: all 0.3s ease; z-index: 200; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.loading { text-align: center; padding: 40px 0; color: var(--muted); font-size: 0.84rem; }
+
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 480px) {
+  .stat-num { font-size: 1.3rem; }
+  .user-avatar { width: 52px; height: 52px; font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="top-bar">
+    <a class="back" href="./index.html">‹</a>
+    <div class="title">个人中心</div>
+  </div>
+
+  <div class="user-card">
+    <div class="user-avatar" id="userAvatar">·</div>
+    <div class="user-info">
+      <div class="user-nickname" id="userNickname">·</div>
+      <div class="user-username" id="userUsername">@</div>
+    </div>
+    <button class="edit-btn" onclick="openEditProfile()">编辑</button>
+  </div>
+
+  <div class="section-title">本月汇总</div>
+  <div class="stats-card">
+    <span class="stats-month" id="statsMonth">—</span>
+    <div class="stats-grid" id="statsGrid"><div class="loading">加载中…</div></div>
+    <div class="stats-total" id="statsTotal"></div>
+  </div>
+
+  <div class="section-title">我的房间</div>
+  <div id="roomsList"><div class="loading">加载中…</div></div>
+
+  <div class="action-row">
+    <button class="action-btn primary" onclick="createRoom()">创建新房间</button>
+    <button class="action-btn ghost" onclick="goIndex()">加入房间</button>
+  </div>
+
+  <div class="section-title">账号</div>
+  <div class="account-list">
+    <div class="account-item" onclick="openEditProfile()">
+      <span class="label">修改昵称 / 头像</span><span class="arrow">›</span>
+    </div>
+    <div class="account-item" onclick="openChangePassword()">
+      <span class="label">修改密码</span><span class="arrow">›</span>
+    </div>
+    <div class="account-item danger" onclick="logout()">
+      <span class="label">退出登录</span><span class="arrow">›</span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalProfile">
+  <div class="modal">
+    <div class="modal-title">编辑资料</div>
+    <div class="modal-field">
+      <label class="modal-field-label">昵称</label>
+      <input type="text" class="modal-input" id="editNickname" maxlength="12" placeholder="想被怎么称呼">
+    </div>
+    <div class="modal-field">
+      <label class="modal-field-label">头像（输入一个 emoji 或单字）</label>
+      <input type="text" class="modal-input" id="editAvatar" maxlength="4" placeholder="例：🌙 或 小">
+    </div>
+    <p class="modal-hint" id="profileHint">留空头像则用昵称首字</p>
+    <div class="modal-btn-row">
+      <button class="modal-btn ghost" onclick="closeModal('modalProfile')">取消</button>
+      <button class="modal-btn primary" onclick="saveProfile()">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalPassword">
+  <div class="modal">
+    <div class="modal-title">修改密码</div>
+    <div class="modal-field">
+      <label class="modal-field-label">原密码</label>
+      <input type="password" class="modal-input" id="oldPwd" maxlength="40" placeholder="输入当前密码">
+    </div>
+    <div class="modal-field">
+      <label class="modal-field-label">新密码</label>
+      <input type="password" class="modal-input" id="newPwd" maxlength="40" placeholder="至少 6 位">
+    </div>
+    <p class="modal-hint" id="pwdHint"></p>
+    <div class="modal-btn-row">
+      <button class="modal-btn ghost" onclick="closeModal('modalPassword')">取消</button>
+      <button class="modal-btn primary" onclick="savePassword()">确认修改</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? 'http://localhost:3000'
+  : 'http://' + location.hostname + ':3000';
+
+var token = localStorage.getItem('mm_token');
+if (!token) window.location.href = './login.html';
+
+var currentUser = null;
+
+function api(path, opts) {
+  opts = opts || {};
+  opts.headers = opts.headers || { 'Content-Type': 'application/json' };
+  if (opts.body && typeof opts.body === 'object') opts.body = JSON.stringify(opts.body);
+  var sep = path.indexOf('?') >= 0 ? '&' : '?';
+  var url = API_BASE + path + sep + 'token=' + encodeURIComponent(token);
+  return fetch(url, opts).then(function(r) { return r.json(); });
+}
+
+function showToast(text) {
+  var t = document.getElementById('toast');
+  t.textContent = text; t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2000);
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, function(c) {
+    return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+  });
+}
+
+function formatTime(ts) {
+  if (!ts) return '还没互动';
+  var d = new Date(ts), now = new Date(), diff = now - d;
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff / 60000) + ' 分钟前';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + ' 小时前';
+  if (diff < 7 * 86400000) return Math.floor(diff / 86400000) + ' 天前';
+  return (d.getMonth() + 1) + '月' + d.getDate() + '日';
+}
+
+function loadUser() {
+  return api('/api/auth/me').then(function(data) {
+    if (!data.success) {
+      localStorage.removeItem('mm_token'); localStorage.removeItem('mm_user');
+      window.location.href = './login.html'; return null;
+    }
+    currentUser = data.user; renderUser(data.user); return data.user;
+  });
+}
+
+function renderUser(user) {
+  var av = user.avatar || (user.nickname ? user.nickname.charAt(0) : '·');
+  document.getElementById('userAvatar').textContent = av;
+  document.getElementById('userNickname').textContent = user.nickname || user.username;
+  document.getElementById('userUsername').textContent = '@' + user.username;
+}
+
+function loadRooms() {
+  return api('/api/user/rooms').then(function(data) {
+    if (!data.success) return;
+    renderStats(data.totals, data.monthLabel);
+    renderRooms(data.rooms);
+  });
+}
+
+function renderStats(totals, monthLabel) {
+  document.getElementById('statsMonth').textContent = monthLabel;
+  var m = totals.month, html = '';
+  html += '<div class="stat-item"><div class="stat-num">' + m.glimmer + '</div><div class="stat-label">微光</div></div>';
+  html += '<div class="stat-item"><div class="stat-num">' + m.whisper + '</div><div class="stat-label">悄悄话</div></div>';
+  html += '<div class="stat-item"><div class="stat-num">' + m.photo + '</div><div class="stat-label">此刻</div></div>';
+  html += '<div class="stat-item"><div class="stat-num">' + m.question + '</div><div class="stat-label">问答</div></div>';
+  document.getElementById('statsGrid').innerHTML = html;
+  var a = totals.all, totalAll = a.glimmer + a.whisper + a.photo + a.question;
+  document.getElementById('statsTotal').textContent = totalAll === 0
+    ? '还没有记录，去房间里留下痕迹吧'
+    : '累计共记录 ' + totalAll + ' 条互动';
+}
+
+function renderRooms(rooms) {
+  var list = document.getElementById('roomsList');
+  if (!rooms || rooms.length === 0) {
+    list.innerHTML = '<div class="empty-state">还没有绑定的房间<br>创建或加入一个房间后会自动出现在这里</div>';
+    return;
+  }
+  var html = '';
+  rooms.forEach(function(r, idx) {
+    if (!r.exists) {
+      html += '<div class="room-card" style="opacity:0.5;cursor:default;">' +
+        '<div class="room-card-head"><div class="room-id">' + escapeHtml(r.roomId) + '</div><div class="room-time">已失效</div></div>' +
+        '<div class="room-counts"><span class="room-count-item">这个房间已不存在</span></div></div>';
+      return;
+    }
+    var c = r.counts;
+    html += '<div class="room-card" style="animation-delay:' + (idx * 0.05) + 's" onclick="enterRoom(\'' + r.roomId + '\')">' +
+      '<div class="room-card-head"><div class="room-id">' + escapeHtml(r.roomId) + '</div>' +
+      '<div class="room-time">最近：' + formatTime(r.lastInteractTs) + '</div></div>' +
+      '<div class="room-counts">' +
+        (c.glimmer > 0 ? '<span class="room-count-item">微光 <span>' + c.glimmer + '</span></span>' : '') +
+        (c.whisper > 0 ? '<span class="room-count-item">悄悄话 <span>' + c.whisper + '</span></span>' : '') +
+        (c.photo > 0 ? '<span class="room-count-item">此刻 <span>' + c.photo + '</span></span>' : '') +
+        (c.question > 0 ? '<span class="room-count-item">问答 <span>' + c.question + '</span></span>' : '') +
+        (c.glimmer + c.whisper + c.photo + c.question === 0 ? '<span class="room-count-item">还没有互动</span>' : '') +
+      '</div></div>';
+  });
+  list.innerHTML = html;
+}
+
+function enterRoom(roomId) {
+  window.location.href = './envelope.html?roomId=' + roomId + '&role=me';
+}
+
+function createRoom() {
+  fetch(API_BASE + '/api/room/create', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}'
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (!data.success) { showToast('创建失败'); return; }
+    var roomId = data.roomId;
+    api('/api/room/' + roomId + '/bind', { method: 'POST', body: {} })
+      .then(function() { window.location.href = './envelope.html?roomId=' + roomId + '&role=me'; });
+  })
+  .catch(function() { showToast('网络错误'); });
+}
+
+function goIndex() { window.location.href = './index.html'; }
+
+function openEditProfile() {
+  document.getElementById('editNickname').value = currentUser.nickname || '';
+  document.getElementById('editAvatar').value = currentUser.avatar || '';
+  var h = document.getElementById('profileHint');
+  h.textContent = '留空头像则用昵称首字'; h.classList.remove('error');
+  document.getElementById('modalProfile').classList.add('active');
+}
+
+function saveProfile() {
+  var nickname = document.getElementById('editNickname').value.trim();
+  var avatar = document.getElementById('editAvatar').value.trim();
+  if (!nickname) {
+    var h = document.getElementById('profileHint');
+    h.textContent = '昵称不能为空'; h.classList.add('error'); return;
+  }
+  api('/api/auth/profile', { method: 'POST', body: { nickname: nickname, avatar: avatar } })
+    .then(function(data) {
+      if (!data.success) {
+        var h = document.getElementById('profileHint');
+        h.textContent = data.error || '保存失败'; h.classList.add('error'); return;
+      }
+      currentUser = data.user;
+      localStorage.setItem('mm_user', JSON.stringify(data.user));
+      renderUser(data.user); closeModal('modalProfile'); showToast('已保存');
+    });
+}
+
+function openChangePassword() {
+  document.getElementById('oldPwd').value = '';
+  document.getElementById('newPwd').value = '';
+  var h = document.getElementById('pwdHint');
+  h.textContent = ''; h.classList.remove('error');
+  document.getElementById('modalPassword').classList.add('active');
+}
+
+function savePassword() {
+  var oldPwd = document.getElementById('oldPwd').value;
+  var newPwd = document.getElementById('newPwd').value;
+  var h = document.getElementById('pwdHint');
+  if (!oldPwd || !newPwd) { h.textContent = '两个都要填'; h.classList.add('error'); return; }
+  if (newPwd.length < 6) { h.textContent = '新密码至少 6 位'; h.classList.add('error'); return; }
+  api('/api/auth/password', { method: 'POST', body: { oldPassword: oldPwd, newPassword: newPwd } })
+    .then(function(data) {
+      if (!data.success) { h.textContent = data.error || '修改失败'; h.classList.add('error'); return; }
+      closeModal('modalPassword'); showToast('密码已修改');
+    });
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+function logout() {
+  if (!confirm('确定退出登录吗？')) return;
+  api('/api/auth/logout', { method: 'POST', body: {} }).finally(function() {
+    localStorage.removeItem('mm_token'); localStorage.removeItem('mm_user');
+    window.location.href = './login.html';
+  });
+}
+
+loadUser().then(function() { if (currentUser) loadRooms(); });
+</script>
+</body>
+</html>
