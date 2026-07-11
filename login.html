@@ -28,12 +28,8 @@
   --accent-soft: #b8895c;
   --accent-light: #2a2218;
   --accent2: #6f8268;
-  --accent2-light: #1e2a1c;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
   --radius-sm: 10px;
-  --radius-md: 14px;
   --radius-lg: 16px;
   --font-heading: 'WorkSans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
   --font-body: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
@@ -50,8 +46,6 @@ body {
 }
 
 .page {
-  position: relative;
-  z-index: 1;
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -60,32 +54,17 @@ body {
   padding: 32px 24px;
 }
 
-/* Brand */
-.brand {
-  text-align: center;
-  margin-bottom: 32px;
-  animation: fadeIn 0.8s ease 0.2s both;
-}
+.brand { text-align: center; margin-bottom: 32px; animation: fadeIn 0.8s ease 0.2s both; }
 .brand-title {
   font-family: var(--font-heading);
-  font-size: 2.4rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-  line-height: 1;
+  font-size: 2.4rem; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--ink); line-height: 1;
 }
 .brand-title .dot { color: var(--accent); }
-.brand-subtitle {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-}
+.brand-subtitle { margin-top: 8px; font-size: 0.8rem; color: var(--muted); letter-spacing: 0.08em; }
 
-/* Card */
 .auth-card {
-  width: 100%;
-  max-width: 380px;
+  width: 100%; max-width: 380px;
   background: var(--card);
   border: 1px solid var(--rule);
   border-radius: var(--radius-lg);
@@ -94,124 +73,71 @@ body {
   animation: fadeIn 0.8s ease 0.4s both;
 }
 
-/* Tabs */
 .tabs {
-  display: flex;
-  background: var(--bg2);
-  border-radius: 100px;
-  padding: 4px;
-  margin-bottom: 24px;
+  display: flex; background: var(--bg2);
+  border-radius: 100px; padding: 4px; margin-bottom: 24px;
 }
 .tab {
-  flex: 1;
-  padding: 10px 0;
-  text-align: center;
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  border-radius: 100px;
-  transition: all 0.3s ease;
-  border: none;
-  background: transparent;
+  flex: 1; padding: 10px 0; text-align: center;
+  font-size: 0.88rem; font-weight: 600; color: var(--muted);
+  cursor: pointer; border-radius: 100px;
+  transition: all 0.3s ease; border: none; background: transparent;
   font-family: var(--font-body);
 }
-.tab.active {
-  background: var(--accent);
-  color: #fff;
-}
+.tab.active { background: var(--accent); color: #fff; }
 
-/* Form */
-.field {
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-}
+.field { margin-bottom: 16px; }
 .field.hidden { display: none; }
 .field-label {
-  display: block;
-  font-size: 0.78rem;
-  color: var(--ink2);
-  margin-bottom: 6px;
-  font-weight: 500;
+  display: block; font-size: 0.78rem; color: var(--ink2);
+  margin-bottom: 6px; font-weight: 500;
 }
 .field-input {
-  width: 100%;
-  padding: 13px 14px;
-  font-size: 0.92rem;
-  font-family: var(--font-body);
-  color: var(--ink);
-  background: var(--bg2);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-sm);
+  width: 100%; padding: 13px 14px;
+  font-size: 0.92rem; font-family: var(--font-body);
+  color: var(--ink); background: var(--bg2);
+  border: 1px solid var(--rule); border-radius: var(--radius-sm);
   transition: all 0.3s ease;
 }
 .field-input:focus {
-  outline: none;
-  border-color: var(--accent);
-  background: var(--bg);
+  outline: none; border-color: var(--accent); background: var(--bg);
   box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.12);
 }
 .field-input::placeholder { color: var(--muted); opacity: 0.6; }
 
-/* Error hint */
 .hint {
-  font-size: 0.78rem;
-  color: var(--muted);
-  min-height: 18px;
-  margin-bottom: 12px;
-  transition: color 0.3s ease;
+  font-size: 0.78rem; color: var(--muted);
+  min-height: 18px; margin-bottom: 12px; transition: color 0.3s ease;
 }
 .hint.error { color: #c97d6d; }
 
-/* Submit button */
 .submit-btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border: none;
-  border-radius: 100px;
-  cursor: pointer;
-  background: var(--accent);
-  color: #fff;
-  transition: all 0.3s ease;
-  font-family: var(--font-body);
+  width: 100%; padding: 14px;
+  font-size: 0.95rem; font-weight: 600;
+  border: none; border-radius: 100px; cursor: pointer;
+  background: var(--accent); color: #fff;
+  transition: all 0.3s ease; font-family: var(--font-body);
   letter-spacing: 0.04em;
 }
 .submit-btn:hover { background: var(--accent-soft); }
 .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-/* Footer link */
 .footer-link {
-  margin-top: 24px;
-  text-align: center;
-  font-size: 0.82rem;
-  color: var(--muted);
+  margin-top: 24px; text-align: center;
+  font-size: 0.82rem; color: var(--muted);
   animation: fadeIn 0.8s ease 0.6s both;
 }
-.footer-link a {
-  color: var(--accent);
-  text-decoration: none;
-  cursor: pointer;
-}
+.footer-link a { color: var(--accent); text-decoration: none; cursor: pointer; }
 .footer-link a:hover { color: var(--accent-soft); }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-6px); }
-  75% { transform: translateX(6px); }
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .shake { animation: shake 0.4s ease; }
 </style>
 </head>
 <body>
 
 <div class="page">
-
   <div class="brand">
     <h1 class="brand-title">慢慢说<span class="dot">.</span></h1>
     <div class="brand-subtitle">SLOWLY · TOGETHER</div>
@@ -223,7 +149,7 @@ body {
       <button class="tab" id="tabRegister" onclick="switchTab('register')">注册</button>
     </div>
 
-    <div class="field" id="fieldNickname">
+    <div class="field hidden" id="fieldNickname">
       <label class="field-label">昵称（可选）</label>
       <input type="text" class="field-input" id="nicknameInput" placeholder="想被怎么称呼" maxlength="12" autocomplete="off">
     </div>
@@ -238,15 +164,11 @@ body {
       <input type="password" class="field-input" id="passwordInput" placeholder="至少 6 位" maxlength="40" autocomplete="off">
     </div>
 
-    <p class="hint" id="hint">注册后可保存你的房间记录</p>
-
+    <p class="hint" id="hint">还没账号？切到注册</p>
     <button class="submit-btn" id="submitBtn" onclick="submit()">登录</button>
   </div>
 
-  <div class="footer-link">
-    只想用钥匙？<a onclick="goIndex()">直接进空间 →</a>
-  </div>
-
+  <div class="footer-link">只想用钥匙？<a onclick="goIndex()">直接进空间 →</a></div>
 </div>
 
 <script>
@@ -284,10 +206,7 @@ function submit() {
   var nickname = document.getElementById('nicknameInput').value.trim();
   var btn = document.getElementById('submitBtn');
 
-  if (!username || !password) {
-    setHint('用户名和密码都要填', true);
-    return;
-  }
+  if (!username || !password) { setHint('用户名和密码都要填', true); return; }
 
   btn.disabled = true;
   btn.textContent = mode === 'login' ? '登录中…' : '注册中…';
@@ -305,17 +224,12 @@ function submit() {
   .then(function(data) {
     btn.disabled = false;
     btn.textContent = mode === 'login' ? '登录' : '注册';
-    if (!data.success) {
-      setHint(data.error || '操作失败', true);
-      return;
-    }
+    if (!data.success) { setHint(data.error || '操作失败', true); return; }
     localStorage.setItem('mm_token', data.token);
     localStorage.setItem('mm_user', JSON.stringify(data.user));
     btn.textContent = '✓ 成功';
     btn.style.background = 'var(--accent2)';
-    setTimeout(function() {
-      window.location.href = './profile.html';
-    }, 600);
+    setTimeout(function() { window.location.href = './profile.html'; }, 600);
   })
   .catch(function() {
     btn.disabled = false;
@@ -324,9 +238,7 @@ function submit() {
   });
 }
 
-function goIndex() {
-  window.location.href = './index.html';
-}
+function goIndex() { window.location.href = './index.html'; }
 
 document.getElementById('passwordInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') submit();
@@ -336,12 +248,9 @@ document.getElementById('passwordInput').addEventListener('keypress', function(e
 if (localStorage.getItem('mm_token')) {
   fetch(API_BASE + '/api/auth/me?token=' + localStorage.getItem('mm_token'))
     .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) window.location.href = './profile.html';
-    })
+    .then(function(data) { if (data.success) window.location.href = './profile.html'; })
     .catch(function() {});
 }
 </script>
-
 </body>
 </html>

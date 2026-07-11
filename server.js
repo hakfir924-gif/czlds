@@ -64,6 +64,27 @@ function generateRoomId() {
   return code;
 }
 
+function generateToken() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let token = '';
+  for (let i = 0; i < 8; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+function validateToken(req, roomData) {
+  // POST 请求从 body 或 query 获取 token
+  const clientToken = req.body && req.body.token ? req.body.token : (req.query.token || '');
+  // 房间无 token 字段（历史数据）→ 放行（向后兼容）
+  if (!roomData.token) return true;
+  // 客户端未提供 token（new room 但 URL 没有 token param）→ 仅限 GET 类读操作放行
+  const isReadOnly = req.method === 'GET';
+  if (!clientToken && isReadOnly) return true;
+  // token 匹配 → 放行
+  return roomData.token === clientToken;
+}
+
 // ========== 每日一问 问题池 ==========
 const dailyQuestionPool = [
   '今天最开心的一件事是什么？',
@@ -128,71 +149,6 @@ const dailyQuestionPool = [
 // 每日话题分类（按类别轮换，避免连续同类）
 const dailyQuestionCategories = ['情绪', '回忆', '未来', '日常', '深度'];
 
-// ========== 拍照主题池 ==========
-const photoThemePool = [
-  '拍一张你此刻看到的光',
-  '拍桌上最旧的一样东西',
-  '拍你手边最显眼的颜色',
-  '拍窗外此刻的天空',
-  '拍你今天穿的鞋',
-  '拍一杯你正在喝的东西',
-  '拍一个你舍不得扔的小物件',
-  '拍此刻你坐的地方',
-  '拍一张代表今天心情的影子',
-  '拍你床头或桌角的一样东西',
-  '拍你今天翻到的最后一页',
-  '拍一个让你想起Ta的细节',
-  '拍此刻离你最近的一本书',
-  '拍一样你用了很久的东西',
-  '拍此刻最安静的一个角落'
-];
-
-// ========== AI 预留接口 ==========
-// 未来接入云端 AI 时，只需在此函数内调用大模型 API
-// 当前版本使用本地模板生成，零隐私风险
-const AI_CONFIG = {
-  enabled: false,            // 未来接入时改为 true
-  apiKey: '',                // 未来填入 API Key
-  endpoint: ''               // 未来填入 API 地址
-};
-
-function generateContent(type, context) {
-  // 预留：当 AI_CONFIG.enabled 为 true 时，调用云端 AI 生成
-  // 当前：使用本地模板池
-  if (AI_CONFIG.enabled && AI_CONFIG.apiKey) {
-    // TODO: 未来实现云端 AI 调用
-    // return callAI(type, context);
-  }
-  return null; // 返回 null 表示用本地模板
-}
-
-// 按分类获取题目索引范围（与 dailyQuestionPool 中的注释分类对应）
-function getQuestionStartIndex(category) {
-  // 前 15 题为原始题（无分类），之后按 5 类排列
-  const ranges = {
-    '情绪': { start: 15, end: 20 },
-    '回忆': { start: 20, end: 28 },
-    '未来': { start: 28, end: 35 },
-    '日常': { start: 35, end: 42 },
-    '深度': { start: 42, end: 55 }
-  };
-  return ranges[category] || { start: 0, end: 15 };
-}
-
-// 每日切换拍照主题
-function refreshPhotoTheme(roomData) {
-  const today = new Date().toDateString();
-  if (roomData.photoThemeDate !== today) {
-    let newTheme;
-    do {
-      newTheme = photoThemePool[Math.floor(Math.random() * photoThemePool.length)];
-    } while (newTheme === roomData.currentPhotoTheme && photoThemePool.length > 1);
-    roomData.currentPhotoTheme = newTheme;
-    roomData.photoThemeDate = today;
-  }
-  return roomData;
-}
-
 // ========== 默契挑战 问题池 ==========
 const challengePool = [
   'Ta最喜欢的颜色是什么？',
@@ -239,6 +195,69 @@ function generateSignOfDay() {
   return signs[Math.floor(Math.random() * signs.length)];
 }
 
+// ========== 拍照主题池 ==========
+const photoThemePool = [
+  '拍一张你此刻看到的光',
+  '拍桌上最旧的一样东西',
+  '拍你手边最显眼的颜色',
+  '拍窗外此刻的天空',
+  '拍你今天穿的鞋',
+  '拍一杯你正在喝的东西',
+  '拍一个你舍不得扔的小物件',
+  '拍此刻你坐的地方',
+  '拍一张代表今天心情的影子',
+  '拍你床头或桌角的一样东西',
+  '拍你今天翻到的最后一页',
+  '拍一个让你想起Ta的细节',
+  '拍此刻离你最近的一本书',
+  '拍一样你用了很久的东西',
+  '拍此刻最安静的一个角落'
+];
+
+// ========== AI 预留接口 ==========
+// 未来接入云端 AI 时，只需在此函数内调用大模型 API
+// 当前版本使用本地模板生成，零隐私风险
+const AI_CONFIG = {
+  enabled: false,            // 未来接入时改为 true
+  apiKey: '',                // 未来填入 API Key
+  endpoint: ''               // 未来填入 API 地址
+};
+
+function generateContent(type, context) {
+  // 预留：当 AI_CONFIG.enabled 为 true 时，调用云端 AI 生成
+  // 当前：使用本地模板池
+  if (AI_CONFIG.enabled && AI_CONFIG.apiKey) {
+    // TODO: 未来实现云端 AI 调用
+  }
+  return null; // 返回 null 表示用本地模板
+}
+
+// 按分类获取题目索引范围（与 dailyQuestionPool 中的注释分类对应）
+function getQuestionStartIndex(category) {
+  const ranges = {
+    '情绪': { start: 15, end: 20 },
+    '回忆': { start: 20, end: 28 },
+    '未来': { start: 28, end: 35 },
+    '日常': { start: 35, end: 42 },
+    '深度': { start: 42, end: 55 }
+  };
+  return ranges[category] || { start: 0, end: 15 };
+}
+
+// 每日切换拍照主题
+function refreshPhotoTheme(roomData) {
+  const today = new Date().toDateString();
+  if (roomData.photoThemeDate !== today) {
+    let newTheme;
+    do {
+      newTheme = photoThemePool[Math.floor(Math.random() * photoThemePool.length)];
+    } while (newTheme === roomData.currentPhotoTheme && photoThemePool.length > 1);
+    roomData.currentPhotoTheme = newTheme;
+    roomData.photoThemeDate = today;
+  }
+  return roomData;
+}
+
 // ========== API: 创建房间 ==========
 app.post('/api/room/create', (req, res) => {
   let roomId;
@@ -248,8 +267,10 @@ app.post('/api/room/create', (req, res) => {
     attempts++;
   } while (fs.existsSync(getRoomPath(roomId)) && attempts < 20);
 
+  const token = generateToken();
   const roomData = {
     roomId: roomId,
+    token: token,
     createdAt: new Date().toISOString(),
     signOfDay: generateSignOfDay(),
     members: {
@@ -281,7 +302,7 @@ app.post('/api/room/create', (req, res) => {
     version: 0
   };
   writeRoom(roomId, roomData);
-  res.json({ success: true, roomId: roomId, roomData: roomData });
+  res.json({ success: true, roomId: roomId, token: token, roomData: roomData });
 });
 
 // ========== API: 加入房间 ==========
@@ -291,7 +312,7 @@ app.post('/api/room/join', (req, res) => {
 
   const roomData = readRoom(roomId.toUpperCase());
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   res.json({ success: true, roomData: roomData });
 });
 
@@ -299,6 +320,7 @@ app.post('/api/room/join', (req, res) => {
 app.get('/api/room/:roomId', (req, res) => {
   const roomData = readRoom(req.params.roomId.toUpperCase());
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   res.json({ success: true, roomData: roomData });
 });
 
@@ -307,7 +329,7 @@ app.post('/api/room/:roomId/glimmer', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, status, text, time } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
 
@@ -334,7 +356,7 @@ app.post('/api/room/:roomId/ask', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { question, time, date } = req.body;
   roomData.askRecords.push({
     question: question,
@@ -353,7 +375,7 @@ app.post('/api/room/:roomId/whisper', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { time, type, summary, text, date } = req.body;
   roomData.whisperRecords.push({
     time: time,
@@ -374,7 +396,7 @@ app.post('/api/room/:roomId/together', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { item, time, date } = req.body;
   roomData.togetherRecords.push({
     item: item,
@@ -393,15 +415,16 @@ app.post('/api/room/:roomId/question', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
 
   // 按分类轮换选题，避免连续同类 + 历史去重
   const askedQuestions = new Set(roomData.dailyQuestionHistory.map(h => h.question));
   askedQuestions.add(roomData.dailyQuestion);
-  
+
   let newQ = null;
   const catIdx = (roomData.dailyQuestionCategoryIndex || 0) % dailyQuestionCategories.length;
   const currentCat = dailyQuestionCategories[catIdx];
-  
+
   // 尝试 AI 生成（预留接口，当前返回 null）
   const aiResult = generateContent('dailyQuestion', { category: currentCat, history: roomData.dailyQuestionHistory });
   if (aiResult) {
@@ -419,7 +442,7 @@ app.post('/api/room/:roomId/question', (req, res) => {
       newQ = allFresh.length > 0 ? allFresh[Math.floor(Math.random() * allFresh.length)] : catQuestions[Math.floor(Math.random() * catQuestions.length)];
     }
   }
-  
+
   roomData.dailyQuestionCategoryIndex = catIdx + 1;
 
   // Save current (if both answered) to history
@@ -445,7 +468,7 @@ app.post('/api/room/:roomId/answer', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, answer } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.dailyQuestionAnswers[memberKey] = answer || '';
@@ -471,7 +494,7 @@ app.post('/api/room/:roomId/challenge/question', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   // Check if one side is waiting
   var hasOneAnswer = (roomData.challengeGuesses.me || roomData.challengeAnswers.me) ||
                      (roomData.challengeGuesses.ta || roomData.challengeAnswers.ta);
@@ -512,7 +535,7 @@ app.post('/api/room/:roomId/challenge/guess', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, guess } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.challengeGuesses[memberKey] = guess || '';
@@ -541,7 +564,7 @@ app.post('/api/room/:roomId/challenge/answer', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, answer } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.challengeAnswers[memberKey] = answer || '';
@@ -569,7 +592,7 @@ app.post('/api/room/:roomId/truth/question', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   // Save current to history if anyone shared
   if (roomData.truthShares.me || roomData.truthShares.ta) {
     roomData.truthHistory.push({
@@ -597,7 +620,7 @@ app.post('/api/room/:roomId/truth/share', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, text } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
   roomData.truthShares[memberKey] = text || '';
@@ -623,7 +646,7 @@ app.post('/api/room/:roomId/photo/upload', upload.single('photo'), (req, res) =>
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   const { role, note } = req.body;
   const memberKey = role === 'ta' ? 'ta' : 'me';
 
@@ -658,7 +681,7 @@ app.post('/api/room/:roomId/photo/reset', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
-
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
   // 如果双方都已上传但还没归档（理论上upload时已归档，这里做兜底）
   if (roomData.photoExchange.me.uploaded && roomData.photoExchange.ta.uploaded) {
     const alreadyArchived = roomData.photoHistory.some(function(h) {
@@ -690,6 +713,7 @@ app.get('/api/room/:roomId/poll', (req, res) => {
   const roomId = req.params.roomId.toUpperCase();
   const roomData = readRoom(roomId);
   if (!roomData) return res.status(404).json({ success: false, error: '房间不存在' });
+  if (!validateToken(req, roomData)) return res.status(403).json({ success: false, error: '访问凭证无效' });
 
   const since = parseInt(req.query.since) || 0;
   const role = req.query.role || 'me';
@@ -785,8 +809,9 @@ app.get('/api/room/:roomId/review', (req, res) => {
 
 // ========== 用户系统 · 数据存储 ==========
 // 用户数据与 token 都存 JSON 文件，与房间数据同目录
+// 注意：用户 token（generateAuthToken）与房间 token（generateToken）是两套机制
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
-const TOKENS_FILE = path.join(DATA_DIR, 'tokens.json');
+const AUTH_TOKENS_FILE = path.join(DATA_DIR, 'auth_tokens.json');
 
 function readUsers() {
   if (!fs.existsSync(USERS_FILE)) return {};
@@ -798,14 +823,14 @@ function writeUsers(data) {
   fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-function readTokens() {
-  if (!fs.existsSync(TOKENS_FILE)) return {};
-  try { return JSON.parse(fs.readFileSync(TOKENS_FILE, 'utf-8')); }
+function readAuthTokens() {
+  if (!fs.existsSync(AUTH_TOKENS_FILE)) return {};
+  try { return JSON.parse(fs.readFileSync(AUTH_TOKENS_FILE, 'utf-8')); }
   catch (e) { return {}; }
 }
 
-function writeTokens(data) {
-  fs.writeFileSync(TOKENS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+function writeAuthTokens(data) {
+  fs.writeFileSync(AUTH_TOKENS_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
 // 密码哈希：sha256 + 固定 salt（demo 阶段足够，生产环境应换 bcrypt）
@@ -818,34 +843,33 @@ function generateUserId() {
   return 'u_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
 
-// ========== Token 机制 ==========
-// 同时服务于房间接口与认证接口，补回之前丢失的 generateToken/validateToken
-function generateToken(userId) {
+// 用户认证 token（区别于房间 token）
+function generateAuthToken(userId) {
   const token = 'tk_' + crypto.randomBytes(18).toString('hex');
-  const tokens = readTokens();
+  const tokens = readAuthTokens();
   tokens[token] = {
     userId: userId,
     createdAt: Date.now(),
     expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 // 30 天
   };
-  writeTokens(tokens);
+  writeAuthTokens(tokens);
   return token;
 }
 
-function validateToken(token) {
+function validateAuthToken(token) {
   if (!token) return null;
-  const tokens = readTokens();
+  const tokens = readAuthTokens();
   const record = tokens[token];
   if (!record) return null;
   if (Date.now() > record.expiresAt) {
     delete tokens[token];
-    writeTokens(tokens);
+    writeAuthTokens(tokens);
     return null;
   }
   return record.userId;
 }
 
-// 从请求中提取 userId（query.token 或 header Authorization）
+// 从请求中提取 userId（query.token / header.Authorization / body.token）
 function getUserIdFromReq(req) {
   let token = '';
   if (req.query && req.query.token) token = req.query.token;
@@ -854,7 +878,7 @@ function getUserIdFromReq(req) {
   } else if (req.body && req.body.token) {
     token = req.body.token;
   }
-  return validateToken(token);
+  return validateAuthToken(token);
 }
 
 // ========== API: 注册 ==========
@@ -871,7 +895,6 @@ app.post('/api/auth/register', (req, res) => {
   }
 
   const users = readUsers();
-  // 用户名大小写不敏感
   const existed = Object.values(users).find(u => u.username.toLowerCase() === username.toLowerCase());
   if (existed) {
     return res.status(409).json({ success: false, error: '这个名字已经有人用了' });
@@ -884,13 +907,13 @@ app.post('/api/auth/register', (req, res) => {
     username: username.trim(),
     passwordHash: hashPassword(password),
     nickname: nick,
-    avatar: '',           // 空则前端用昵称首字
+    avatar: '',
     boundRooms: [],
     createdAt: new Date().toISOString()
   };
   writeUsers(users);
 
-  const token = generateToken(userId);
+  const token = generateAuthToken(userId);
   res.json({
     success: true,
     token: token,
@@ -917,7 +940,7 @@ app.post('/api/auth/login', (req, res) => {
     return res.status(401).json({ success: false, error: '用户名或密码不对' });
   }
 
-  const token = generateToken(user.userId);
+  const token = generateAuthToken(user.userId);
   res.json({
     success: true,
     token: token,
@@ -953,7 +976,7 @@ app.get('/api/auth/me', (req, res) => {
   });
 });
 
-// ========== API: 修改个人资料（昵称/头像） ==========
+// ========== API: 修改个人资料 ==========
 app.post('/api/auth/profile', (req, res) => {
   const userId = getUserIdFromReq(req);
   if (!userId) return res.status(401).json({ success: false, error: '未登录或登录已过期' });
@@ -967,7 +990,7 @@ app.post('/api/auth/profile', (req, res) => {
     user.nickname = nickname.trim().slice(0, 12);
   }
   if (typeof avatar === 'string') {
-    user.avatar = avatar.trim().slice(0, 4); // emoji 或单字符
+    user.avatar = avatar.trim().slice(0, 4);
   }
   users[userId] = user;
   writeUsers(users);
@@ -1019,10 +1042,10 @@ app.post('/api/auth/logout', (req, res) => {
   else if (req.body && req.body.token) token = req.body.token;
 
   if (token) {
-    const tokens = readTokens();
+    const tokens = readAuthTokens();
     if (tokens[token]) {
       delete tokens[token];
-      writeTokens(tokens);
+      writeAuthTokens(tokens);
     }
   }
   res.json({ success: true });

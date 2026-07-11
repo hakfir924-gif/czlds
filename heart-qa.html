@@ -20,23 +20,23 @@
 
 /* ========== CSS VARIABLES ========== */
 :root {
-  --bg: #faf7f2;
-  --bg2: #f3efe7;
-  --card: rgba(255, 252, 247, 0.78);
-  --ink: #3d3529;
-  --ink2: #5c5244;
-  --muted: #9b8e7e;
-  --rule: #e5ded2;
-  --accent: #c97d4d;
-  --accent-soft: #dca67a;
-  --accent-light: #f5e6d8;
-  --accent2: #8b9d83;
-  --accent2-light: #e8efe5;
-  --shadow-sm: 0 1px 3px rgba(61, 53, 41, 0.06);
-  --shadow-md: 0 4px 16px rgba(61, 53, 41, 0.08);
-  --radius-sm: 12px;
-  --radius-md: 18px;
-  --radius-lg: 24px;
+  --bg: #14110d;
+  --bg2: #1c1813;
+  --card: #1f1a14;
+  --ink: #ede4d3;
+  --ink2: #b8ac97;
+  --muted: #7a7163;
+  --rule: #2e281f;
+  --accent: #d4a373;
+  --accent-soft: #b8895c;
+  --accent-light: #2a2218;
+  --accent2: #6f8268;
+  --accent2-light: #1e2a1c;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
   --font-heading: 'WorkSans', 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
   --font-body: 'PingFang SC', 'Noto Sans CJK SC', 'Microsoft YaHei', sans-serif;
   --nav-height: 64px;
@@ -53,14 +53,6 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   padding-bottom: var(--nav-height);
-}
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 15%, rgba(220, 166, 122, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 40% at 80% 85%, rgba(139, 157, 131, 0.06) 0%, transparent 60%);
-  pointer-events: none; z-index: 0;
 }
 .page {
   position: relative; z-index: 1;
@@ -137,11 +129,11 @@ body::before {
 .input-row input {
   flex: 1; border: 1px solid var(--rule); border-radius: 100px;
   padding: 10px 16px; font-size: 0.9rem; font-family: var(--font-body);
-  color: #1a140e; background: var(--bg); outline: none;
+  color: var(--ink); background: var(--bg); outline: none;
   transition: border-color 0.3s ease;
   font-weight: 500;
 }
-.input-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(201, 125, 77, 0.12); background: #fff; }
+.input-row input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.15); background: var(--bg2); }
 .input-row input::placeholder { color: var(--muted); opacity: 0.65; font-weight: 400; }
 .input-row .send-btn {
   flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
@@ -149,7 +141,7 @@ body::before {
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   transition: all 0.3s ease;
 }
-.input-row .send-btn:hover { background: #b87042; }
+.input-row .send-btn:hover { background: var(--accent-soft); }
 .input-row .send-btn:disabled { background: var(--muted); cursor: not-allowed; }
 
 /* ========== WAITING ========== */
@@ -235,7 +227,7 @@ body::before {
   border-radius: 100px; margin-right: 6px; vertical-align: middle;
 }
 .history-item .hi-badge.daily { background: var(--accent-light); color: var(--accent); }
-.history-item .hi-badge.challenge { background: #f5e0ec; color: #c97d9d; }
+.history-item .hi-badge.challenge { background: #2a1a22; color: #d49ab5; }
 .history-item .hi-badge.truth { background: var(--accent2-light); color: var(--accent2); }
 .history-item .hi-date { font-size: 0.68rem; color: var(--muted); margin-bottom: 4px; }
 .history-item .hi-q { font-weight: 600; color: var(--ink); margin-bottom: 4px; font-size: 0.8rem; }
@@ -244,12 +236,6 @@ body::before {
 
 /* ========== 此刻予你 ========== */
 .moment-section { text-align: center; padding: 12px 0; }
-.moment-theme-hint {
-  font-size: 0.8rem; color: var(--accent); font-weight: 600;
-  margin-bottom: 12px; padding: 8px 16px;
-  background: var(--accent-light); border-radius: 100px;
-  display: inline-block; letter-spacing: 0.02em;
-}
 .moment-upload-wrap {
   display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
@@ -311,7 +297,7 @@ body::before {
   .moment-reveal-grid { grid-template-columns: 1fr; }
 }
 .moment-reveal-item {
-  background: #fff; border-radius: var(--radius-sm); padding: 10px;
+  background: var(--bg2); border-radius: var(--radius-sm); padding: 10px;
   border: 1px solid var(--rule); box-shadow: var(--shadow-sm);
   transition: transform 0.3s ease;
 }
@@ -336,14 +322,14 @@ body::before {
 
 /* ========== 此刻予你 - Ta通知 ========== */
 .moment-ta-notify {
-  margin-top: 12px; padding: 10px 16px; background: linear-gradient(135deg, #fdf2e9, #fef9f3);
-  border: 1px solid #f0d6b8; border-radius: 12px; text-align: center;
-  animation: fadeInUp 0.4s ease; cursor: pointer;
+  margin-top: 12px; padding: 10px 16px; background: linear-gradient(135deg, #1e2a1c 0%, #243028 100%);
+  border: 2px dashed var(--accent2); border-radius: 12px; text-align: center;
+  animation: fadeInUp 0.4s ease; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 .moment-ta-notify .notify-icon { font-size: 1.2rem; margin-bottom: 4px; }
-.moment-ta-notify .notify-text { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.moment-ta-notify .notify-text { font-size: 0.85rem; color: #a8c4a0; font-weight: 600; }
 .moment-ta-notify .notify-hint { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
-.moment-ta-notify:hover { background: linear-gradient(135deg, #fcebd8, #fdf2e9); transform: scale(1.01); }
+.moment-ta-notify:hover { background: linear-gradient(135deg, #243028, #2a3630); transform: scale(1.01); }
 
 /* ========== 此刻予你 - 历史记录 ========== */
 .moment-history-toggle {
@@ -412,6 +398,96 @@ body::before {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-4px); }
 }
+
+/* ========== 拍照主题提示 ========== */
+.moment-theme {
+  background: var(--accent-light);
+  border: 1px dashed var(--accent-soft);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+.moment-theme .mt-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+/* ========== 月度回顾弹层 ========== */
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(20, 17, 13, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 200;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-mask.active { display: flex; }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 460px;
+  max-height: 80vh; overflow-y: auto;
+  padding: 24px 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.modal-header .mh-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem; font-weight: 700; color: var(--ink);
+}
+.modal-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: var(--card); color: var(--muted);
+  cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--rule); color: var(--ink); }
+.review-empty { color: var(--muted); text-align: center; padding: 30px 0; font-size: 0.9rem; }
+.review-stat-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  margin-bottom: 16px;
+}
+.review-stat {
+  background: var(--card); border-radius: var(--radius-sm);
+  padding: 12px 14px; text-align: center;
+}
+.review-stat .rs-num {
+  font-family: var(--font-heading); font-size: 1.6rem; font-weight: 700;
+  color: var(--accent); line-height: 1.2;
+}
+.review-stat .rs-label {
+  font-size: 0.72rem; color: var(--muted); margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+.review-summary {
+  background: var(--accent-light); border-radius: var(--radius-md);
+  padding: 14px 16px; font-size: 0.88rem; color: var(--ink2);
+  line-height: 1.8; font-style: italic;
+}
+.review-loading { color: var(--muted); text-align: center; padding: 30px 0; }
+.topbar-action {
+  background: var(--card); border: 1px solid var(--rule);
+  color: var(--ink2); border-radius: 50%;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+.topbar-action:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -421,7 +497,7 @@ body::before {
   <div class="top-bar">
     <a class="back" href="./manmanshuo.html" id="backLink"><span class="back-arrow">←</span> 首页</a>
     <div class="title">心问答</div>
-    <div style="width:40px;"></div>
+    <button class="topbar-action" onclick="openMonthReview()" title="本月回顾">📅</button>
   </div>
 
   <!-- ===== 每日一问 ===== -->
@@ -497,10 +573,11 @@ body::before {
 
 <script>
 // ===== API =====
-var API_BASE = 'http://localhost:3000';
+var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'http://' + location.hostname + ':3000';
 var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
+var roomToken = params.get('token') || '';
 var serverVersion = 0;
 
 // ===== State =====
@@ -518,8 +595,8 @@ var photoMe = { photoUrl: '', note: '', uploaded: false, timestamp: 0 };
 var photoTa = { photoUrl: '', note: '', uploaded: false, timestamp: 0 };
 var photoPreviewUrl = '';
 var photoHistory = [];
-var currentPhotoTheme = '';
 var momentHistoryOpen = false;
+var currentPhotoTheme = '';
 
 function escapeHtml(s) {
   var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
@@ -593,7 +670,7 @@ function submitDaily() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/answer', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, answer: answer })
+      body: JSON.stringify({ role: role, answer: answer, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -601,7 +678,8 @@ function submitDaily() {
 function refreshDailyQuestion() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/question', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: roomToken })
     }).then(function(r) { return r.json(); }).then(function(data) {
       if (data.success) {
         dqQuestion = data.dailyQuestion; dqMe = ''; dqTa = '';
@@ -725,7 +803,7 @@ function submitChallengeGuess() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/challenge/guess', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, guess: guess })
+      body: JSON.stringify({ role: role, guess: guess, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -740,7 +818,7 @@ function submitChallengeAnswer() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/challenge/answer', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, answer: answer })
+      body: JSON.stringify({ role: role, answer: answer, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -748,7 +826,8 @@ function submitChallengeAnswer() {
 function refreshChallenge() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/challenge/question', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: roomToken })
     }).then(function(r) { return r.json(); }).then(function(data) {
       if (data.success) {
         chQuestion = data.challengeQuestion;
@@ -817,7 +896,7 @@ function submitTruth() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/truth/share', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: role, text: text })
+      body: JSON.stringify({ role: role, text: text, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -825,7 +904,8 @@ function submitTruth() {
 function refreshTruth() {
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/truth/question', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: roomToken })
     }).then(function(r) { return r.json(); }).then(function(data) {
       if (data.success) {
         trQuestion = data.truthQuestion; trMe = ''; trTa = '';
@@ -906,7 +986,7 @@ function renderPhotoExchange() {
   // State changed - do full render
   _momentRenderState = targetState;
 
-  if (bothUploaded) {
+  if (targetState === 'reveal') {
     // Reveal state - show both photos side by side
     var historyHtml = renderPhotoHistoryHtml();
     el.innerHTML = '<div class="moment-reveal">' +
@@ -931,7 +1011,7 @@ function renderPhotoExchange() {
     // 绑定历史展开事件
     var histBtn = el.querySelector('.moment-history-toggle');
     if (histBtn) histBtn.addEventListener('click', toggleMomentHistory);
-  } else if (myPhoto.uploaded) {
+  } else if (targetState === 'wait') {
     // Waiting state - I uploaded, waiting for Ta
     var taNotifyHtml = '';
     if (taPhoto.uploaded) {
@@ -951,8 +1031,9 @@ function renderPhotoExchange() {
       '</div>';
   } else {
     // Upload state - show upload area
+    var themeHtml = currentPhotoTheme ? '<div class="moment-theme"><span class="mt-label">今日主题</span>' + escapeHtml(currentPhotoTheme) + '</div>' : '';
     el.innerHTML = '<div class="moment-section">' +
-      (currentPhotoTheme ? '<div class="moment-theme-hint">今日主题：' + escapeHtml(currentPhotoTheme) + '</div>' : '') +
+      themeHtml +
       '<div class="moment-upload-wrap">' +
       '<div class="moment-upload-area" onclick="document.getElementById(\'momentFile\').click()">' +
       '<div class="upload-icon">📷</div>' +
@@ -1029,6 +1110,7 @@ function submitPhoto() {
   formData.append('photo', file);
   formData.append('role', role);
   formData.append('note', note);
+  formData.append('token', roomToken);
 
   var btn = document.getElementById('momentSendBtn');
   if (btn) { btn.disabled = true; btn.textContent = '发送中...'; }
@@ -1065,7 +1147,8 @@ function resetPhotoExchange() {
   renderPhotoExchange();
   if (roomId) {
     fetch(API_BASE + '/api/room/' + roomId + '/photo/reset', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: role, token: roomToken })
     }).catch(function() {});
   }
 }
@@ -1073,7 +1156,7 @@ function resetPhotoExchange() {
 // ========== Polling ==========
 function pollServer() {
   if (!roomId) return;
-  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role)
+  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role + '&token=' + roomToken)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data.success) return;
@@ -1141,10 +1224,18 @@ function pollServer() {
         if (data.photoHistory) {
           photoHistory = data.photoHistory;
         }
-        if (data.currentPhotoTheme) {
-          currentPhotoTheme = data.currentPhotoTheme;
-        }
         if (photoChanged) renderPhotoExchange();
+      }
+
+      // Photo theme
+      if (data.currentPhotoTheme && data.currentPhotoTheme !== currentPhotoTheme) {
+        currentPhotoTheme = data.currentPhotoTheme;
+        var themeEl = document.querySelector('.moment-theme');
+        if (!themeEl && _momentRenderState === 'upload') {
+          renderPhotoExchange();
+        } else if (themeEl) {
+          themeEl.innerHTML = '<span class="mt-label">今日主题</span>' + escapeHtml(currentPhotoTheme);
+        }
       }
 
       // History
@@ -1163,7 +1254,7 @@ function pollServer() {
 // ========== Init: fetch server data first, then render ==========
 function initFromServer(cb) {
   if (!roomId) { cb(); return; }
-  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role)
+  fetch(API_BASE + '/api/room/' + roomId + '/poll?since=0&role=' + role + '&token=' + roomToken)
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (!data || !data.success) { cb(); return; }
@@ -1194,9 +1285,6 @@ function initFromServer(cb) {
       }
       if (data.photoHistory) {
         photoHistory = data.photoHistory;
-      }
-      if (data.currentPhotoTheme) {
-        currentPhotoTheme = data.currentPhotoTheme;
       }
       var newHistory = [];
       (data.dailyQuestionHistory || []).forEach(function(h) { h.type = 'daily'; newHistory.push(h); });
@@ -1232,6 +1320,52 @@ if (roomId) {
   document.getElementById('navSlowly').href = './slowly.html' + navSuffix;
   document.getElementById('backLink').href = './manmanshuo.html' + navSuffix;
 }
+
+// ===== 月度回顾 =====
+function openMonthReview() {
+  var modal = document.getElementById('reviewModal');
+  var content = document.getElementById('reviewContent');
+  modal.classList.add('active');
+  content.innerHTML = '<div class="review-loading">加载中...</div>';
+  var url = API_BASE + '/api/room/' + roomId + '/review?token=' + encodeURIComponent(roomToken);
+  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    if (!data.success) {
+      content.innerHTML = '<div class="review-empty">' + escapeHtml(data.error || '加载失败') + '</div>';
+      return;
+    }
+    var r = data.review || {};
+    var stats = r.stats || {};
+    var html = '<div class="review-stat-grid">' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.glimmerCount || 0) + '</div><div class="rs-label">微光时刻</div></div>' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.whisperCount || 0) + '</div><div class="rs-label">轻声说</div></div>' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.photoCount || 0) + '</div><div class="rs-label">此刻予你</div></div>' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.questionCount || 0) + '</div><div class="rs-label">每日一问</div></div>' +
+      '</div>';
+    if (r.summary) {
+      html += '<div class="review-summary">' + escapeHtml(r.summary) + '</div>';
+    } else if ((stats.glimmerCount || 0) + (stats.whisperCount || 0) + (stats.photoCount || 0) + (stats.questionCount || 0) === 0) {
+      html += '<div class="review-empty">这个月还没有记录，去心问答里留下点什么吧。</div>';
+    }
+    content.innerHTML = html;
+  }).catch(function(e) {
+    content.innerHTML = '<div class="review-empty">网络错误，请稍后重试</div>';
+  });
+}
+
+function closeMonthReview() {
+  document.getElementById('reviewModal').classList.remove('active');
+}
 </script>
+
+<!-- 月度回顾弹层 -->
+<div class="modal-mask" id="reviewModal" onclick="if(event.target===this)closeMonthReview()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="mh-title">📅 本月回顾</div>
+      <button class="modal-close" onclick="closeMonthReview()">✕</button>
+    </div>
+    <div id="reviewContent"></div>
+  </div>
+</div>
 </body>
 </html>
