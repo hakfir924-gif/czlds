@@ -398,6 +398,96 @@ body {
   0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
   40% { opacity: 1; transform: translateY(-4px); }
 }
+
+/* ========== 拍照主题提示 ========== */
+.moment-theme {
+  background: var(--accent-light);
+  border: 1px dashed var(--accent-soft);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: var(--accent);
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+.moment-theme .mt-label {
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-right: 6px;
+}
+
+/* ========== 月度回顾弹层 ========== */
+.modal-mask {
+  position: fixed; inset: 0;
+  background: rgba(20, 17, 13, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 200;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-mask.active { display: flex; }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  width: 100%; max-width: 460px;
+  max-height: 80vh; overflow-y: auto;
+  padding: 24px 22px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.modal-header .mh-title {
+  font-family: var(--font-heading);
+  font-size: 1.1rem; font-weight: 700; color: var(--ink);
+}
+.modal-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: none; background: var(--card); color: var(--muted);
+  cursor: pointer; font-size: 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--rule); color: var(--ink); }
+.review-empty { color: var(--muted); text-align: center; padding: 30px 0; font-size: 0.9rem; }
+.review-stat-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+  margin-bottom: 16px;
+}
+.review-stat {
+  background: var(--card); border-radius: var(--radius-sm);
+  padding: 12px 14px; text-align: center;
+}
+.review-stat .rs-num {
+  font-family: var(--font-heading); font-size: 1.6rem; font-weight: 700;
+  color: var(--accent); line-height: 1.2;
+}
+.review-stat .rs-label {
+  font-size: 0.72rem; color: var(--muted); margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+.review-summary {
+  background: var(--accent-light); border-radius: var(--radius-md);
+  padding: 14px 16px; font-size: 0.88rem; color: var(--ink2);
+  line-height: 1.8; font-style: italic;
+}
+.review-loading { color: var(--muted); text-align: center; padding: 30px 0; }
+.topbar-action {
+  background: var(--card); border: 1px solid var(--rule);
+  color: var(--ink2); border-radius: 50%;
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+.topbar-action:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -407,7 +497,7 @@ body {
   <div class="top-bar">
     <a class="back" href="./manmanshuo.html" id="backLink"><span class="back-arrow">←</span> 首页</a>
     <div class="title">心问答</div>
-    <div style="width:40px;"></div>
+    <button class="topbar-action" onclick="openMonthReview()" title="本月回顾">📅</button>
   </div>
 
   <!-- ===== 每日一问 ===== -->
@@ -506,6 +596,7 @@ var photoTa = { photoUrl: '', note: '', uploaded: false, timestamp: 0 };
 var photoPreviewUrl = '';
 var photoHistory = [];
 var momentHistoryOpen = false;
+var currentPhotoTheme = '';
 
 function escapeHtml(s) {
   var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
@@ -940,7 +1031,9 @@ function renderPhotoExchange() {
       '</div>';
   } else {
     // Upload state - show upload area
+    var themeHtml = currentPhotoTheme ? '<div class="moment-theme"><span class="mt-label">今日主题</span>' + escapeHtml(currentPhotoTheme) + '</div>' : '';
     el.innerHTML = '<div class="moment-section">' +
+      themeHtml +
       '<div class="moment-upload-wrap">' +
       '<div class="moment-upload-area" onclick="document.getElementById(\'momentFile\').click()">' +
       '<div class="upload-icon">📷</div>' +
@@ -1134,6 +1227,17 @@ function pollServer() {
         if (photoChanged) renderPhotoExchange();
       }
 
+      // Photo theme
+      if (data.currentPhotoTheme && data.currentPhotoTheme !== currentPhotoTheme) {
+        currentPhotoTheme = data.currentPhotoTheme;
+        var themeEl = document.querySelector('.moment-theme');
+        if (!themeEl && _momentRenderState === 'upload') {
+          renderPhotoExchange();
+        } else if (themeEl) {
+          themeEl.innerHTML = '<span class="mt-label">今日主题</span>' + escapeHtml(currentPhotoTheme);
+        }
+      }
+
       // History
       var newHistory = [];
       (data.dailyQuestionHistory || []).forEach(function(h) { h.type = 'daily'; newHistory.push(h); });
@@ -1216,6 +1320,52 @@ if (roomId) {
   document.getElementById('navSlowly').href = './slowly.html' + navSuffix;
   document.getElementById('backLink').href = './manmanshuo.html' + navSuffix;
 }
+
+// ===== 月度回顾 =====
+function openMonthReview() {
+  var modal = document.getElementById('reviewModal');
+  var content = document.getElementById('reviewContent');
+  modal.classList.add('active');
+  content.innerHTML = '<div class="review-loading">加载中...</div>';
+  var url = API_BASE + '/api/room/' + roomId + '/review?token=' + encodeURIComponent(roomToken);
+  fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+    if (!data.success) {
+      content.innerHTML = '<div class="review-empty">' + escapeHtml(data.error || '加载失败') + '</div>';
+      return;
+    }
+    var r = data.review || {};
+    var stats = r.stats || {};
+    var html = '<div class="review-stat-grid">' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.glimmerCount || 0) + '</div><div class="rs-label">微光时刻</div></div>' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.whisperCount || 0) + '</div><div class="rs-label">轻声说</div></div>' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.photoCount || 0) + '</div><div class="rs-label">此刻予你</div></div>' +
+      '<div class="review-stat"><div class="rs-num">' + (stats.questionCount || 0) + '</div><div class="rs-label">每日一问</div></div>' +
+      '</div>';
+    if (r.summary) {
+      html += '<div class="review-summary">' + escapeHtml(r.summary) + '</div>';
+    } else if ((stats.glimmerCount || 0) + (stats.whisperCount || 0) + (stats.photoCount || 0) + (stats.questionCount || 0) === 0) {
+      html += '<div class="review-empty">这个月还没有记录，去心问答里留下点什么吧。</div>';
+    }
+    content.innerHTML = html;
+  }).catch(function(e) {
+    content.innerHTML = '<div class="review-empty">网络错误，请稍后重试</div>';
+  });
+}
+
+function closeMonthReview() {
+  document.getElementById('reviewModal').classList.remove('active');
+}
 </script>
+
+<!-- 月度回顾弹层 -->
+<div class="modal-mask" id="reviewModal" onclick="if(event.target===this)closeMonthReview()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="mh-title">📅 本月回顾</div>
+      <button class="modal-close" onclick="closeMonthReview()">✕</button>
+    </div>
+    <div id="reviewContent"></div>
+  </div>
+</div>
 </body>
 </html>
