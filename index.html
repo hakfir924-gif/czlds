@@ -18,23 +18,23 @@
   font-weight: 700; font-style: normal;
 }
 
-/* ========== CSS VARIABLES ========== */
+/* ========== CSS VARIABLES · 星夜呢喃 ========== */
 :root {
-  --bg: #14110d;
-  --bg2: #1c1813;
-  --card: #1f1a14;
-  --ink: #ede4d3;
-  --ink2: #b8ac97;
-  --muted: #7a7163;
-  --rule: #2e281f;
-  --accent: #d4a373;
-  --accent-soft: #b8895c;
-  --accent-light: #2a2218;
-  --accent2: #6f8268;
-  --accent2-light: #1e2a1c;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --bg: #0f0a1e;
+  --bg2: #1a1233;
+  --card: #221a3d;
+  --ink: #f0eaff;
+  --ink2: #c8b8e8;
+  --muted: #8478a8;
+  --rule: #2e2455;
+  --accent: #a8e6cf;
+  --accent-soft: #7ed4b3;
+  --accent-light: #1e2a25;
+  --accent2: #ffd6e8;
+  --accent2-light: #2a1e2a;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.55);
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 16px;
@@ -53,6 +53,58 @@ body {
   overflow: hidden;
 }
 .float-dot { display: none; }
+
+/* ========== 星空背景 ========== */
+.starfield {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.starfield .star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: twinkle 3s ease-in-out infinite;
+}
+.starfield .star.big {
+  width: 3px;
+  height: 3px;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+}
+.starfield .star.pink {
+  background: #ffd6e8;
+  box-shadow: 0 0 6px rgba(255, 214, 232, 0.7);
+}
+.starfield .star.mint {
+  background: #a8e6cf;
+  box-shadow: 0 0 6px rgba(168, 230, 207, 0.7);
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 0.9; transform: scale(1.2); }
+}
+/* 流星 */
+.shooting-star {
+  position: absolute;
+  top: 10%;
+  left: -50px;
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #fff, transparent);
+  opacity: 0;
+  animation: shoot 8s ease-in infinite;
+}
+@keyframes shoot {
+  0% { transform: translate(0, 0) rotate(15deg); opacity: 0; }
+  5% { opacity: 1; }
+  20% { transform: translate(400px, 120px) rotate(15deg); opacity: 0; }
+  100% { transform: translate(400px, 120px) rotate(15deg); opacity: 0; }
+}
 
 /* ========== LAYOUT ========== */
 .page {
@@ -480,12 +532,8 @@ body {
 </head>
 <body>
 
-<!-- Floating dots ambiance -->
-<div class="float-dot"></div>
-<div class="float-dot"></div>
-<div class="float-dot"></div>
-<div class="float-dot"></div>
-<div class="float-dot"></div>
+<!-- 星空背景 -->
+<div class="starfield" id="starfield"></div>
 
 <!-- Top-right entry: 我的 / 登录 -->
 <a class="me-entry" id="meEntry" href="./login.html">
@@ -506,25 +554,25 @@ body {
     <div class="door-glow"></div>
     <svg viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:relative;z-index:1;">
       <!-- Ground line -->
-      <line x1="20" y1="160" x2="200" y2="160" stroke="#3a342a" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="20" y1="160" x2="200" y2="160" stroke="#3a2e5c" stroke-width="1.5" stroke-linecap="round"/>
 
       <!-- Door frame -->
-      <path d="M 60 160 L 60 60 Q 60 40 80 40 L 140 40 Q 160 40 160 60 L 160 160" stroke="#7a7163" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M 60 160 L 60 60 Q 60 40 80 40 L 140 40 Q 160 40 160 60 L 160 160" stroke="#8478a8" stroke-width="2" fill="none" stroke-linecap="round"/>
 
-      <!-- Left door (orange) -->
+      <!-- Left door (薄荷绿) -->
       <g class="door-left">
-        <path d="M 60 160 L 60 60 Q 60 42 78 42 L 110 42 L 110 160 Z" fill="#d4a373" opacity="0.85"/>
-        <circle cx="100" cy="105" r="2.5" fill="#ede4d3"/>
+        <path d="M 60 160 L 60 60 Q 60 42 78 42 L 110 42 L 110 160 Z" fill="#a8e6cf" opacity="0.85"/>
+        <circle cx="100" cy="105" r="2.5" fill="#f0eaff"/>
       </g>
 
-      <!-- Right door (green) -->
+      <!-- Right door (樱花粉) -->
       <g class="door-right">
-        <path d="M 160 160 L 160 60 Q 160 42 142 42 L 110 42 L 110 160 Z" fill="#8fae85" opacity="0.85"/>
-        <circle cx="120" cy="105" r="2.5" fill="#ede4d3"/>
+        <path d="M 160 160 L 160 60 Q 160 42 142 42 L 110 42 L 110 160 Z" fill="#ffd6e8" opacity="0.85"/>
+        <circle cx="120" cy="105" r="2.5" fill="#f0eaff"/>
       </g>
 
-      <!-- Soft warm light at top -->
-      <ellipse cx="110" cy="35" rx="32" ry="6" fill="#f5e6d8" opacity="0.6"/>
+      <!-- 柔光 -->
+      <ellipse cx="110" cy="35" rx="32" ry="6" fill="#e8d8ff" opacity="0.6"/>
     </svg>
   </div>
 
@@ -590,6 +638,33 @@ body {
 <script>
 // ========== API ==========
 var API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? 'http://localhost:3000' : 'http://' + location.hostname + ':3000';
+
+// 生成星空背景
+(function() {
+  var sf = document.getElementById('starfield');
+  if (!sf) return;
+  var types = ['', 'big', 'pink', 'mint'];
+  var counts = { '': 40, 'big': 8, 'pink': 6, 'mint': 6 };
+  Object.keys(counts).forEach(function(type) {
+    for (var i = 0; i < counts[type]; i++) {
+      var s = document.createElement('div');
+      s.className = 'star' + (type ? ' ' + type : '');
+      s.style.left = Math.random() * 100 + '%';
+      s.style.top = Math.random() * 100 + '%';
+      s.style.animationDelay = Math.random() * 3 + 's';
+      s.style.animationDuration = (2 + Math.random() * 3) + 's';
+      sf.appendChild(s);
+    }
+  });
+  // 加 2 颗流星
+  for (var j = 0; j < 2; j++) {
+    var sh = document.createElement('div');
+    sh.className = 'shooting-star';
+    sh.style.top = (5 + Math.random() * 30) + '%';
+    sh.style.animationDelay = (j * 4 + Math.random() * 2) + 's';
+    sf.appendChild(sh);
+  }
+})();
 
 // 已登录则把右上角入口指向个人中心
 var mmToken = localStorage.getItem('mm_token');
