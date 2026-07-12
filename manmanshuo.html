@@ -514,10 +514,10 @@ body {
       <div class="glimmer-card">
         <div class="g-avatar ta">Ta</div>
         <div class="g-name">现在的Ta</div>
-        <div class="g-status" id="taStatus">😴 有点累</div>
-        <div class="g-text" id="taGlimmer">今天开会到很晚，有点累，但想到周末可以见面就很开心。</div>
-        <div class="g-time" id="taTime">18:20</div>
-        <div class="ai-hint" id="taHint">💡 Ta今天可能有点累，一个拥抱就够了</div>
+        <div class="g-status" id="taStatus"></div>
+        <div class="g-text" id="taGlimmer">Ta 还没有更新状态</div>
+        <div class="g-time" id="taTime"></div>
+        <div class="ai-hint" id="taHint" style="display:none;"></div>
       </div>
     </div>
   </div>
@@ -588,44 +588,41 @@ var serverVersion = 0;
 })();
 
 // ========== Ta的微光 ==========
-var taGlimmers = [
-  { status: '😴 有点累', text: '今天开会到很晚，有点累，但想到周末可以见面就很开心。', time: '18:20' },
-  { status: '😊 开心', text: '中午吃了你推荐的餐厅，真的很好吃，下次一起去。', time: '12:45' },
-  { status: '😊 开心', text: '今天被老板夸了，第一个想分享的人就是你。', time: '15:10' },
-  { status: '😌 平静', text: '下雨了，记得你上次说最喜欢下雨天窝在家里。', time: '16:30' },
-  { status: '💭 在想你', text: '今天没什么特别的，就是突然很想你。', time: '21:05' }
-];
-var taHints = [
-  '💡 Ta今天可能有点累，一个拥抱就够了',
-  '💡 Ta今天心情不错，可以问问发生了什么开心的事',
-  '💡 Ta今天被肯定了，跟Ta说一句"我就知道你可以"',
-  '💡 Ta想起了你，回一句"我也在想你"',
-  '💡 Ta今天有点想你，不用多说什么，告诉Ta你在就好'
-];
-var currentTa = Math.floor(Math.random() * taGlimmers.length);
-
+// 渲染 Ta 的微光状态；data 为空（对方尚未更新）时显示占位文案，不再使用随机示例
 function updateTaDisplay(data) {
-  var taData = data || taGlimmers[currentTa];
-  document.getElementById('taStatus').textContent = taData.status || '';
-  document.getElementById('taGlimmer').textContent = taData.text || 'Ta还没有更新状态';
-  document.getElementById('taTime').textContent = taData.time || '';
+  var taStatus = document.getElementById('taStatus');
+  var taGlimmer = document.getElementById('taGlimmer');
+  var taTime = document.getElementById('taTime');
   var hint = document.getElementById('taHint');
-  if (taData.status) {
-    hint.textContent = taHints[currentTa];
-    hint.style.display = 'block';
-  }
-  // Show AI hint if Ta has a status
-  if (taData.status) {
-    setTimeout(function() {
-      hint.textContent = taHints[currentTa];
-      hint.style.display = 'block';
-    }, 3000);
+  hint.style.display = 'none';
+  if (data && data.text) {
+    taStatus.textContent = data.status || '';
+    taGlimmer.textContent = data.text;
+    taTime.textContent = data.time || '';
+  } else {
+    taStatus.textContent = '';
+    taGlimmer.textContent = 'Ta 还没有更新状态';
+    taTime.textContent = '';
   }
 }
 
-updateTaDisplay();
+// ========== 页面加载：先请求 /api/room/:roomId 初始化 Ta 的微光 ==========
+if (roomId) {
+  fetch(API_BASE + '/api/room/' + roomId + '?token=' + encodeURIComponent(roomToken))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data || !data.success) { updateTaDisplay(null); return; }
+      var roomData = data.roomData;
+      serverVersion = roomData.version || 0;
+      var otherRole = role === 'ta' ? 'me' : 'ta';
+      updateTaDisplay(roomData.members[otherRole].glimmer);
+    })
+    .catch(function() { updateTaDisplay(null); });
+} else {
+  updateTaDisplay(null);
+}
 
-// ========== Polling: sync Ta's glimmer from server ==========
+// ========== Polling: 只负责后续增量更新 ==========
 if (roomId) {
   function pollServer() {
     fetch(API_BASE + '/api/room/' + roomId + '/poll?since=' + serverVersion + '&role=' + role)
@@ -634,15 +631,8 @@ if (roomId) {
         if (!data.hasUpdates || !data.roomData) return;
         serverVersion = data.version;
         var roomData = data.roomData;
-
-        // Update Ta's glimmer (show the other person's glimmer)
         var otherRole = role === 'ta' ? 'me' : 'ta';
-        var otherGlimmer = roomData.members[otherRole].glimmer;
-        if (otherGlimmer && otherGlimmer.text) {
-          document.getElementById('taStatus').textContent = otherGlimmer.status || '';
-          document.getElementById('taGlimmer').textContent = otherGlimmer.text;
-          document.getElementById('taTime').textContent = otherGlimmer.time || '';
-        }
+        updateTaDisplay(roomData.members[otherRole].glimmer);
       })
       .catch(function() {});
   }
@@ -704,7 +694,8 @@ function saveMyGlimmer() {
         role: role,
         status: selectedStatus ? (selectedEmoji + ' ' + selectedStatus) : '',
         text: text || document.getElementById('myGlimmer').textContent,
-        time: timeStr
+        time: timeStr,
+        token: roomToken
       })
     }).catch(function() {});
   }
@@ -769,7 +760,7 @@ function refreshTogether() {
     fetch(API_BASE + '/api/room/' + roomId + '/together', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ item: newItem, time: timeStr, date: now.toLocaleDateString('zh-CN') })
+      body: JSON.stringify({ item: newItem, time: timeStr, date: now.toLocaleDateString('zh-CN'), token: roomToken })
     }).catch(function() {});
   }
 }
