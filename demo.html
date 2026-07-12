@@ -506,6 +506,257 @@ button { font-family: inherit; }
   color: var(--ink2-paper);
   line-height: 1.45;
 }
+.feature-card.active {
+  background: rgba(122,158,126,0.15);
+  border-color: var(--accent-sage);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(122,158,126,0.25);
+}
+.feature-card.active .feature-name { color: var(--accent-sage); }
+.feature-hint {
+  font-size: 9px;
+  color: var(--accent-sage);
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}
+
+/* 功能预览面板 */
+.feature-preview {
+  margin-top: 14px;
+  background: rgba(255,255,255,0.7);
+  border: 1px solid var(--rule-paper);
+  border-radius: 14px;
+  padding: 16px 14px;
+  min-height: 100px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.feature-preview.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.preview-empty {
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink2-paper);
+  font-style: italic;
+  padding: 20px 0;
+  opacity: 0.6;
+}
+.preview-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--rule-paper);
+}
+.preview-title {
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-paper);
+}
+.preview-sub {
+  font-size: 10px;
+  color: var(--ink2-paper);
+}
+
+/* 微光预览 */
+.glimmer-list { display: flex; flex-direction: column; gap: 8px; }
+.glimmer-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 10px;
+  border-left: 3px solid var(--accent-sage);
+}
+.glimmer-item.ta { border-left-color: var(--accent-rose); }
+.glimmer-emoji { font-size: 18px; line-height: 1.4; }
+.glimmer-body { flex: 1; min-width: 0; }
+.glimmer-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+.glimmer-role {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-sage);
+}
+.glimmer-item.ta .glimmer-role { color: var(--accent-rose); }
+.glimmer-mood {
+  font-size: 10px;
+  color: var(--ink2-paper);
+}
+.glimmer-time {
+  font-size: 9px;
+  color: var(--ink2-paper);
+  opacity: 0.7;
+  margin-left: auto;
+}
+.glimmer-text {
+  font-size: 11px;
+  color: var(--ink-paper);
+  line-height: 1.5;
+}
+
+/* 每日一问预览 */
+.pq-question {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-paper);
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  background: rgba(122,158,126,0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+.pq-answers { display: flex; flex-direction: column; gap: 6px; }
+.pq-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.pq-tag {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent-sage);
+}
+.pq-row.ta .pq-tag { background: var(--accent-rose); }
+.pq-text {
+  color: var(--ink-paper);
+  line-height: 1.5;
+}
+
+/* 默契挑战预览 */
+.chal-question {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-paper);
+  margin-bottom: 10px;
+  text-align: center;
+  padding: 8px 10px;
+  background: rgba(201,125,157,0.1);
+  border-radius: 8px;
+}
+.chal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+}
+.chal-label { color: var(--ink2-paper); }
+.chal-val { color: var(--ink-paper); font-weight: 600; }
+.chal-result {
+  margin-top: 8px;
+  text-align: center;
+  padding: 8px;
+  background: linear-gradient(135deg, rgba(122,158,126,0.18), rgba(168,230,207,0.18));
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-sage);
+}
+.chal-result.nomatch {
+  background: linear-gradient(135deg, rgba(201,125,157,0.18), rgba(255,214,232,0.18));
+  color: var(--accent-rose);
+}
+
+/* 此刻予你预览 */
+.moment-theme {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-paper);
+  margin-bottom: 10px;
+  text-align: center;
+  padding: 8px 10px;
+  background: rgba(245,184,134,0.15);
+  border-radius: 8px;
+}
+.moment-photos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.moment-photo {
+  border-radius: 10px;
+  overflow: hidden;
+}
+.moment-photo-img {
+  height: 60px;
+  border-radius: 8px 8px 0 0;
+}
+.moment-photo-info {
+  padding: 6px 8px;
+  background: rgba(255,255,255,0.6);
+  border-radius: 0 0 8px 8px;
+}
+.moment-photo-role {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-sage);
+}
+.moment-photo-note {
+  font-size: 10px;
+  color: var(--ink-paper);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+/* 月度回顾预览 */
+.review-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.review-stat {
+  text-align: center;
+  padding: 8px 4px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 8px;
+}
+.review-num {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-sage);
+  line-height: 1;
+}
+.review-label {
+  font-size: 9px;
+  color: var(--ink2-paper);
+  margin-top: 3px;
+}
+.review-summary {
+  font-size: 11px;
+  color: var(--ink-paper);
+  line-height: 1.6;
+  padding: 10px;
+  background: rgba(122,158,126,0.08);
+  border-left: 3px solid var(--accent-sage);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
 
 /* ========== 封面/封底内容 ========== */
 .cover-content {
@@ -874,6 +1125,9 @@ button { font-family: inherit; }
           <h2 class="features-title">还有这些，<br>在慢慢说里</h2>
           <div class="features-sub">日常的陪伴，比一次轰烈更近</div>
           <div class="features-grid" id="featuresGrid"></div>
+          <div class="feature-preview" id="featurePreview">
+            <div class="preview-empty">点击上方任意功能，看一眼它的样子</div>
+          </div>
         </div>
         <div class="corner-curl"></div>
       </div>
@@ -1052,12 +1306,70 @@ function matchUnderstandScenario(input) {
 
 /* ========== 其他功能 5 个卡片 ========== */
 var FEATURES = [
-  { icon: '🌤', name: '微光状态', desc: '各自记录一个心情瞬间，对方可见' },
-  { icon: '💭', name: '每日一问', desc: '每天一个问题，慢慢靠近彼此' },
-  { icon: '🎯', name: '默契挑战', desc: '猜猜 Ta 的答案，看看你们有多默契' },
-  { icon: '💌', name: '此刻予你', desc: '每天一个拍照主题，分享你的当下' },
-  { icon: '📅', name: '月度回顾', desc: '月底，看看你们一起走过的路' }
+  { icon: '🌤', name: '微光状态', desc: '各自记录一个心情瞬间，对方可见', key: 'glimmer' },
+  { icon: '💭', name: '每日一问', desc: '每天一个问题，慢慢靠近彼此', key: 'question' },
+  { icon: '🎯', name: '默契挑战', desc: '猜猜 Ta 的答案，看看你们有多默契', key: 'challenge' },
+  { icon: '💌', name: '此刻予你', desc: '每天一个拍照主题，分享你的当下', key: 'moment' },
+  { icon: '📅', name: '月度回顾', desc: '月底，看看你们一起走过的路', key: 'review' }
 ];
+
+/* 每个功能的预览内容 */
+var FEATURE_PREVIEWS = {
+  glimmer: {
+    title: '微光状态',
+    sub: '此刻，你们各自在哪种光里',
+    type: 'glimmer',
+    data: [
+      { role: '我', emoji: '🌙', mood: '安静', text: '今天有点累，但想到你就不那么累了', time: '22:30' },
+      { role: 'Ta', emoji: '☀️', mood: '温暖', text: '刚到家，给你热了饭，快来吃', time: '22:15' }
+    ]
+  },
+  question: {
+    title: '每日一问',
+    sub: '今天的问题是',
+    type: 'question',
+    data: {
+      question: '今天最想对Ta说的一句话是什么？',
+      me: '谢谢你还在。',
+      ta: '想和你再看一次日落。'
+    }
+  },
+  challenge: {
+    title: '默契挑战',
+    sub: '猜猜 Ta 的答案',
+    type: 'challenge',
+    data: {
+      question: 'Ta最喜欢的季节是？',
+      myGuess: '秋天',
+      taAnswer: '秋天',
+      match: true
+    }
+  },
+  moment: {
+    title: '此刻予你',
+    sub: '今天的拍照主题',
+    type: 'moment',
+    data: {
+      theme: '拍此刻窗外',
+      me: { color: '#f5b886', note: '下班路上的晚霞，想到你' },
+      ta: { color: '#7a9eb8', note: '我这边下雨了，想你' }
+    }
+  },
+  review: {
+    title: '月度回顾',
+    sub: '这个月，你们一起走过的路',
+    type: 'review',
+    data: {
+      stats: [
+        { num: 18, label: '次微光' },
+        { num: 12, label: '条悄悄话' },
+        { num: 8, label: '张此刻' },
+        { num: 5, label: '件一起的事' }
+      ],
+      summary: '这个月，你们说了 43 次话，笑了 27 次，安静了 3 次。安静的时候，也没走远。'
+    }
+  }
+};
 
 /* ========== 翻页书核心：状态管理 ========== */
 var totalPages = 6;
@@ -1487,11 +1799,14 @@ understandContinueBtn.addEventListener('click', function() {
   nextPage();
 });
 
-/* ========== 第 5 页：渲染 5 个功能卡片 ========== */
+/* ========== 第 5 页：渲染 5 个功能卡片 + 点击预览 ========== */
 var featuresGrid = document.getElementById('featuresGrid');
+var featurePreview = document.getElementById('featurePreview');
+
 FEATURES.forEach(function(f) {
   var card = document.createElement('div');
   card.className = 'feature-card';
+  card.dataset.key = f.key;
   var icon = document.createElement('div');
   icon.className = 'feature-icon';
   icon.textContent = f.icon;
@@ -1501,11 +1816,108 @@ FEATURES.forEach(function(f) {
   var desc = document.createElement('div');
   desc.className = 'feature-desc';
   setText(desc, f.desc);
+  var hint = document.createElement('div');
+  hint.className = 'feature-hint';
+  hint.textContent = '点击预览 →';
   card.appendChild(icon);
   card.appendChild(name);
   card.appendChild(desc);
+  card.appendChild(hint);
+  card.addEventListener('click', function() {
+    document.querySelectorAll('.feature-card').forEach(function(c) { c.classList.remove('active'); });
+    card.classList.add('active');
+    renderFeaturePreview(f.key);
+    setTimeout(function() {
+      featurePreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 120);
+  });
   featuresGrid.appendChild(card);
 });
+
+/* 5 种预览渲染函数 */
+function renderGlimmerPreview(data) {
+  var html = '<div class="preview-head"><div class="preview-title">微光状态</div><div class="preview-sub">此刻，你们各自在哪种光里</div></div>';
+  html += '<div class="glimmer-list">';
+  data.forEach(function(item) {
+    var isTa = item.role === 'Ta';
+    html += '<div class="glimmer-item' + (isTa ? ' ta' : '') + '">';
+    html += '<div class="glimmer-emoji">' + escapeHtml(item.emoji) + '</div>';
+    html += '<div class="glimmer-body">';
+    html += '<div class="glimmer-meta">';
+    html += '<span class="glimmer-role">' + escapeHtml(item.role) + '</span>';
+    html += '<span class="glimmer-mood">' + escapeHtml(item.mood) + '</span>';
+    html += '<span class="glimmer-time">' + escapeHtml(item.time) + '</span>';
+    html += '</div>';
+    html += '<div class="glimmer-text">' + escapeHtml(item.text) + '</div>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderQuestionPreview(data) {
+  var html = '<div class="preview-head"><div class="preview-title">每日一问</div><div class="preview-sub">今天的问题是</div></div>';
+  html += '<div class="pq-question">' + escapeHtml(data.question) + '</div>';
+  html += '<div class="pq-answers">';
+  html += '<div class="pq-row"><div class="pq-tag">我</div><div class="pq-text">' + escapeHtml(data.me) + '</div></div>';
+  html += '<div class="pq-row ta"><div class="pq-tag">Ta</div><div class="pq-text">' + escapeHtml(data.ta) + '</div></div>';
+  html += '</div>';
+  return html;
+}
+
+function renderChallengePreview(data) {
+  var html = '<div class="preview-head"><div class="preview-title">默契挑战</div><div class="preview-sub">猜猜 Ta 的答案</div></div>';
+  html += '<div class="chal-question">' + escapeHtml(data.question) + '</div>';
+  html += '<div class="chal-row"><span class="chal-label">我猜的</span><span class="chal-val">' + escapeHtml(data.myGuess) + '</span></div>';
+  html += '<div class="chal-row"><span class="chal-label">Ta 的答案</span><span class="chal-val">' + escapeHtml(data.taAnswer) + '</span></div>';
+  var matchClass = data.match ? '' : ' nomatch';
+  var matchText = data.match ? '✓ 默契 +1' : '✗ 这次没对上，但没关系';
+  html += '<div class="chal-result' + matchClass + '">' + matchText + '</div>';
+  return html;
+}
+
+function renderMomentPreview(data) {
+  var html = '<div class="preview-head"><div class="preview-title">此刻予你</div><div class="preview-sub">今天的拍照主题</div></div>';
+  html += '<div class="moment-theme">' + escapeHtml(data.theme) + '</div>';
+  html += '<div class="moment-photos">';
+  html += '<div class="moment-photo">';
+  html += '<div class="moment-photo-img" style="background:' + data.me.color + ';"></div>';
+  html += '<div class="moment-photo-info"><div class="moment-photo-role">我</div><div class="moment-photo-note">' + escapeHtml(data.me.note) + '</div></div>';
+  html += '</div>';
+  html += '<div class="moment-photo">';
+  html += '<div class="moment-photo-img" style="background:' + data.ta.color + ';"></div>';
+  html += '<div class="moment-photo-info"><div class="moment-photo-role" style="color:var(--accent-rose);">Ta</div><div class="moment-photo-note">' + escapeHtml(data.ta.note) + '</div></div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderReviewPreview(data) {
+  var html = '<div class="preview-head"><div class="preview-title">月度回顾</div><div class="preview-sub">这个月，你们一起走过的路</div></div>';
+  html += '<div class="review-stats">';
+  data.stats.forEach(function(s) {
+    html += '<div class="review-stat"><div class="review-num">' + s.num + '</div><div class="review-label">' + escapeHtml(s.label) + '</div></div>';
+  });
+  html += '</div>';
+  html += '<div class="review-summary">' + escapeHtml(data.summary) + '</div>';
+  return html;
+}
+
+/* 统一入口：根据 key 渲染对应预览 */
+function renderFeaturePreview(key) {
+  var preview = FEATURE_PREVIEWS[key];
+  if (!preview) return;
+  var html = '';
+  switch (preview.type) {
+    case 'glimmer':   html = renderGlimmerPreview(preview.data); break;
+    case 'question':  html = renderQuestionPreview(preview.data); break;
+    case 'challenge': html = renderChallengePreview(preview.data); break;
+    case 'moment':    html = renderMomentPreview(preview.data); break;
+    case 'review':    html = renderReviewPreview(preview.data); break;
+  }
+  featurePreview.innerHTML = html;
+  featurePreview.classList.add('show');
+}
 
 /* ========== 第 6 页：返回首页 ========== */
 document.getElementById('backHome').addEventListener('click', function(e) {
