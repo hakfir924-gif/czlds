@@ -488,6 +488,20 @@ body {
   transition: all 0.3s ease;
 }
 .topbar-action:hover { border-color: var(--accent); color: var(--accent); }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+.demo-switch {
+  font-size: 0.72rem;
+  color: var(--accent2);
+  background: var(--accent2-light);
+  border: 1px solid var(--accent2);
+  border-radius: 100px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s ease;
+  display: none;
+}
+.demo-switch:hover { background: var(--accent2); color: #fff; }
 </style>
 </head>
 <body>
@@ -497,7 +511,10 @@ body {
   <div class="top-bar">
     <a class="back" href="./manmanshuo.html" id="backLink"><span class="back-arrow">←</span> 首页</a>
     <div class="title">心问答</div>
-    <button class="topbar-action" onclick="openMonthReview()" title="本月回顾">📅</button>
+    <div class="topbar-actions">
+      <button class="demo-switch" id="demoSwitch" onclick="switchRole()">🔄 切换</button>
+      <button class="topbar-action" onclick="openMonthReview()" title="本月回顾">📅</button>
+    </div>
   </div>
 
   <!-- ===== 每日一问 ===== -->
@@ -578,7 +595,24 @@ var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
 var roomToken = params.get('token') || '';
+var isDemo = params.get('demo') === '1';
 var serverVersion = 0;
+
+// ========== 演示模式：显示视角切换按钮 ==========
+if (isDemo) {
+  var sw = document.getElementById('demoSwitch');
+  if (sw) {
+    sw.style.display = 'block';
+    sw.textContent = role === 'me' ? '🔄 切换为Ta' : '🔄 切换为我';
+  }
+}
+
+function switchRole() {
+  var newRole = role === 'me' ? 'ta' : 'me';
+  var newParams = new URLSearchParams(window.location.search);
+  newParams.set('role', newRole);
+  location.search = newParams.toString();
+}
 
 // ===== State =====
 var dqQuestion = '今天最开心的一件事是什么？';

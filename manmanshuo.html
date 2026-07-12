@@ -78,6 +78,19 @@ body {
   letter-spacing: 0.03em;
 }
 .top-bar .brand .dot { color: var(--accent); }
+.demo-switch {
+  font-size: 0.75rem;
+  color: var(--accent2);
+  background: var(--accent2-light);
+  border: 1px solid var(--accent2);
+  border-radius: 100px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-left: 6px;
+  font-family: var(--font-body);
+  transition: all 0.3s ease;
+}
+.demo-switch:hover { background: var(--accent2); color: #fff; }
 .avatars {
   display: flex;
   gap: 6px;
@@ -471,6 +484,7 @@ body {
     <div class="avatars">
       <div class="av me">我</div>
       <div class="av ta">Ta</div>
+      <button class="demo-switch" id="demoSwitch" style="display:none;" onclick="switchRole()">🔄 切换为Ta</button>
     </div>
   </div>
 
@@ -565,7 +579,24 @@ var params = new URLSearchParams(window.location.search);
 var roomId = params.get('roomId') || '';
 var role = params.get('role') || 'me';
 var roomToken = params.get('token') || '';
+var isDemo = params.get('demo') === '1';
 var serverVersion = 0;
+
+// ========== 演示模式：显示视角切换按钮 ==========
+if (isDemo) {
+  var sw = document.getElementById('demoSwitch');
+  if (sw) {
+    sw.style.display = 'block';
+    sw.textContent = role === 'me' ? '🔄 切换为Ta' : '🔄 切换为我';
+  }
+}
+
+function switchRole() {
+  var newRole = role === 'me' ? 'ta' : 'me';
+  var newParams = new URLSearchParams(window.location.search);
+  newParams.set('role', newRole);
+  location.search = newParams.toString();
+}
 
 // ========== SIGN FROM URL ==========
 (function() {

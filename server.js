@@ -1138,8 +1138,95 @@ app.get('/api/user/rooms', (req, res) => {
   });
 });
 
+// ========== 演示 Demo 房间初始化 ==========
+// 启动时自动创建一个预置数据的 demo 房间，供评委一键体验
+const DEMO_ROOM_ID = 'MM-DEMO';
+const DEMO_ROOM_TOKEN = 'demo2026';
+
+function initDemoRoom() {
+  const demoPath = getRoomPath(DEMO_ROOM_ID);
+  // 已存在则不覆盖（保留评委体验时产生的真实互动）
+  if (fs.existsSync(demoPath)) {
+    console.log('Demo 房间已存在: ' + DEMO_ROOM_ID + ' (token: ' + DEMO_ROOM_TOKEN + ')');
+    return;
+  }
+
+  const now = Date.now();
+  const todayStr = new Date().toDateString();
+  const todayLabel = new Date().toLocaleDateString('zh-CN');
+  const timeStr = function(h, m) { return String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0'); };
+
+  const roomData = {
+    roomId: DEMO_ROOM_ID,
+    token: DEMO_ROOM_TOKEN,
+    createdAt: new Date(now - 7 * 86400000).toISOString(),
+    signOfDay: { type: '一句话', content: '今天不用很完美，今天你已经在对方心里了。' },
+    members: {
+      me: {
+        glimmer: { status: '😊 开心', text: '今天项目终于上线了，第一个想分享的人就是你。', time: timeStr(18, 30) },
+        lastSeen: new Date(now - 3600000).toISOString()
+      },
+      ta: {
+        glimmer: { status: '😌 平静', text: '下午去散步，看到一只橘猫晒太阳，想起了你。', time: timeStr(16, 45) },
+        lastSeen: new Date(now - 7200000).toISOString()
+      }
+    },
+    glimmerEntries: [
+      { time: timeStr(18, 30), type: 'me', status: '😊 开心', text: '今天项目终于上线了，第一个想分享的人就是你。', date: todayLabel, timestamp: now - 3600000 },
+      { time: timeStr(16, 45), type: 'ta', status: '😌 平静', text: '下午去散步，看到一只橘猫晒太阳，想起了你。', date: todayLabel, timestamp: now - 7200000 },
+      { time: timeStr(21, 10), type: 'me', status: '💭 在想你', text: '忙完一天，最想做的事就是和你说说话。', date: new Date(now - 86400000).toLocaleDateString('zh-CN'), timestamp: now - 86400000 + 72600000 }
+    ],
+    askRecords: [],
+    whisperRecords: [
+      { time: timeStr(22, 15), type: '想你了', summary: '深夜的一句话', text: '今天看到一句话："所谓爱情，就是两个人一起把平凡的日子过成故事。"突然很想你。', date: todayLabel, timestamp: now - 10000000 }
+    ],
+    togetherRecords: [
+      { item: '一起看完《时空恋旅人》', time: timeStr(20, 0), date: new Date(now - 2 * 86400000).toLocaleDateString('zh-CN'), timestamp: now - 2 * 86400000 }
+    ],
+    dailyQuestion: '你们之间最让你怀念的一个瞬间是什么？',
+    dailyQuestionAnswers: {
+      me: '上次下雨你没带伞，我跑去接你，两个人淋着雨笑了一路。',
+      ta: '你第一次做饭给我吃，虽然有点咸，但你紧张的样子特别可爱。'
+    },
+    dailyQuestionHistory: [
+      { question: '今天最开心的一件事是什么？', date: new Date(now - 2 * 86400000).toLocaleDateString('zh-CN'), timestamp: now - 2 * 86400000 },
+      { question: '用一种颜色形容今天的心情，为什么？', date: new Date(now - 86400000).toLocaleDateString('zh-CN'), timestamp: now - 86400000 }
+    ],
+    challengeQuestion: 'Ta最喜欢的食物是什么？',
+    challengeGuesses: { me: '火锅', ta: '寿司' },
+    challengeAnswers: { me: '寿司', ta: '火锅' },
+    challengeHistory: [],
+    truthQuestion: '最近一次被Ta感动是什么时候？',
+    truthShares: {
+      me: '上周我加班到很晚，回家发现你给我留了灯和热好的饭。',
+      ta: '你记得我随口说过想吃的每一样东西。'
+    },
+    truthHistory: [],
+    photoExchange: {
+      me: { photoUrl: '', note: '', uploaded: false, timestamp: 0 },
+      ta: { photoUrl: '', note: '', uploaded: false, timestamp: 0 }
+    },
+    photoHistory: [
+      {
+        date: new Date(now - 3 * 86400000).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }),
+        timestamp: now - 3 * 86400000,
+        me: { photoUrl: '', note: '窗外的晚霞' },
+        ta: { photoUrl: '', note: '我养的多肉开花了' }
+      }
+    ],
+    currentPhotoTheme: '拍一张你此刻看到的光',
+    photoThemeDate: todayStr,
+    dailyQuestionCategoryIndex: 3,
+    version: now
+  };
+
+  writeRoom(DEMO_ROOM_ID, roomData);
+  console.log('Demo 房间已创建: ' + DEMO_ROOM_ID + ' (token: ' + DEMO_ROOM_TOKEN + ')');
+}
+
 // ========== START ==========
 app.listen(PORT, () => {
   console.log('慢慢说服务端已启动: http://localhost:' + PORT);
   console.log('数据目录: ' + DATA_DIR);
+  initDemoRoom();
 });

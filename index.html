@@ -182,6 +182,19 @@ body {
   color: var(--accent);
   transform: translateY(-1px);
 }
+.btn-demo {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed var(--rule);
+  font-size: 0.88rem;
+  padding: 12px 24px;
+  margin-top: 4px;
+}
+.btn-demo:hover {
+  color: var(--accent2);
+  border-color: var(--accent2);
+  border-style: solid;
+}
 
 /* Footer */
 .footer-text {
@@ -525,6 +538,7 @@ body {
   <div class="actions">
     <button class="btn btn-primary" onclick="openModal('enter')">开启我的空间</button>
     <button class="btn btn-ghost" onclick="openModal('invite')">邀请 Ta 进入</button>
+    <button class="btn btn-demo" onclick="enterDemo()">✨ 立即体验 Demo</button>
   </div>
 
   <div class="footer-text">这里只有你们两个人</div>
@@ -622,6 +636,28 @@ function openModal(type) {
       document.getElementById('keyInput').focus();
     }, 400);
   }
+}
+
+// 演示模式：一键进入 Demo
+// 优先尝试有后端的完整体验（manmanshuo.html），后端不通时降级到纯前端 demo.html
+function enterDemo() {
+  var liveUrl = './manmanshuo.html?roomId=MM-DEMO&role=me&token=demo2026&demo=1';
+  var offlineUrl = './demo.html';
+
+  // 探测后端是否可用（1.5秒超时）
+  var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  var timeoutId = setTimeout(function() { if (controller) controller.abort(); }, 1500);
+
+  fetch((location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'http://' + location.hostname + ':3000') + '/api/room/MM-DEMO?token=demo2026', { signal: controller ? controller.signal : undefined })
+    .then(function(r) { clearTimeout(timeoutId); return r.json(); })
+    .then(function(data) {
+      if (data && data.success) {
+        location.href = liveUrl;  // 后端可用 → 完整体验
+      } else {
+        location.href = offlineUrl;  // 后端不通 → 纯前端展示
+      }
+    })
+    .catch(function() { location.href = offlineUrl; });  // 超时或错误 → 纯前端展示
 }
 
 function closeModal(type) {
