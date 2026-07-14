@@ -39,7 +39,9 @@ echo "[3/5] 数据目录就绪（data/ uploads/）"
 echo "[4/5] 启动 node server.js（日志：$LOG_FILE）"
 # 加载 .env（如存在）
 if [ -f ".env" ]; then
-  export $(grep -v '^#' .env | xargs)
+  set -a
+  source .env
+  set +a
   echo "      已加载 .env"
 fi
 nohup node server.js > "$LOG_FILE" 2>&1 &
