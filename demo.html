@@ -1185,7 +1185,7 @@ var API_BASE = (function() {
 var AI_ENABLED = false; // 启动时探测，后端可用且配了 key 才为 true
 
 function probeAI() {
-  fetch(API_BASE + '/api/ai/status')
+  fetch(API_BASE + '/api/ai/status?token=demo2026')
     .then(function(r) { return r.json(); })
     .then(function(d) {
       if (d && d.success && d.enabled) {
@@ -1203,7 +1203,7 @@ probeAI();
 function callAiSay(text) {
   return fetch(API_BASE + '/api/ai/say', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Demo-Token': 'demo2026' },
     body: JSON.stringify({ text: text })
   })
     .then(function(r) { return r.json(); })
@@ -1218,7 +1218,7 @@ function callAiSay(text) {
 function callAiUnderstand(text) {
   return fetch(API_BASE + '/api/ai/understand', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'X-Demo-Token': 'demo2026' },
     body: JSON.stringify({ text: text })
   })
     .then(function(r) { return r.json(); })

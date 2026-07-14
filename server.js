@@ -22,6 +22,33 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.static(__dirname));
 
+// ========== AI 接口防护：IP 限频 + demo token 校验 ==========
+const AI_RATE_LIMIT = {};  // { ip: { count, resetAt } }
+const AI_RATE_MAX = 5;     // 每 IP 每分钟最多 5 次
+const AI_RATE_WINDOW = 60 * 1000;  // 1 分钟
+const DEMO_TOKEN = 'demo2026';  // 公开的 demo token，防直接刷
+
+function aiGuard(req, res, next) {
+  // 1. demo token 校验（header 或 query）
+  const token = req.headers['x-demo-token'] || req.query.token;
+  if (token !== DEMO_TOKEN) {
+    return res.status(403).json({ success: false, error: '无权访问' });
+  }
+  // 2. IP 限频
+  const ip = req.ip || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+  if (!AI_RATE_LIMIT[ip] || now > AI_RATE_LIMIT[ip].resetAt) {
+    AI_RATE_LIMIT[ip] = { count: 0, resetAt: now + AI_RATE_WINDOW };
+  }
+  AI_RATE_LIMIT[ip].count++;
+  if (AI_RATE_LIMIT[ip].count > AI_RATE_MAX) {
+    const retryAfter = Math.ceil((AI_RATE_LIMIT[ip].resetAt - now) / 1000);
+    res.set('Retry-After', retryAfter);
+    return res.status(429).json({ success: false, error: '请求太频繁，请稍后再试', retryAfter });
+  }
+  next();
+}
+
 // Data directory
 const DATA_DIR = path.join(__dirname, 'data');
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -1342,7 +1369,7 @@ function initDemoRoom() {
 // ========== API: AI 帮你说 ==========
 // POST /api/ai/say  body: { text: string }
 // 返回 { success, ai: true/false, understanding, transformed, variants }
-app.post('/api/ai/say', async (req, res) => {
+app.post('/api/ai/say', aiGuard, async (req, res) => {
   const text = (req.body && req.body.text || '').trim();
   if (!text) return res.status(400).json({ success: false, error: '请输入想说的话' });
   if (!AI_CONFIG.enabled) return res.json({ success: false, ai: false, error: 'AI 未启用' });
@@ -1354,7 +1381,7 @@ app.post('/api/ai/say', async (req, res) => {
 // ========== API: AI 帮你懂 ==========
 // POST /api/ai/understand  body: { text: string }
 // 返回 { success, ai: true/false, understanding, approach }
-app.post('/api/ai/understand', async (req, res) => {
+app.post('/api/ai/understand', aiGuard, async (req, res) => {
   const text = (req.body && req.body.text || '').trim();
   if (!text) return res.status(400).json({ success: false, error: '请输入场景描述' });
   if (!AI_CONFIG.enabled) return res.json({ success: false, ai: false, error: 'AI 未启用' });
