@@ -214,21 +214,92 @@ const photoThemePool = [
   '拍此刻最安静的一个角落'
 ];
 
-// ========== AI 预留接口 ==========
-// 未来接入云端 AI 时，只需在此函数内调用大模型 API
-// 当前版本使用本地模板生成，零隐私风险
+// ========== AI 接口（美团 LongCat-2.0 龙猫） ==========
+// 兼容 OpenAI 格式，公测期每日 500 万 tokens 免费额度
+// 获取 API Key：https://longcat.chat/platform/api_keys
 const AI_CONFIG = {
-  enabled: false,            // 未来接入时改为 true
-  apiKey: '',                // 未来填入 API Key
-  endpoint: ''               // 未来填入 API 地址
+  enabled: process.env.LONGCAT_API_KEY ? true : false,
+  apiKey: process.env.LONGCAT_API_KEY || '',
+  endpoint: 'https://api.longcat.chat/openai/v1/chat/completions',
+  model: 'LongCat-2.0'
 };
 
-function generateContent(type, context) {
-  // 预留：当 AI_CONFIG.enabled 为 true 时，调用云端 AI 生成
-  // 当前：使用本地模板池
-  if (AI_CONFIG.enabled && AI_CONFIG.apiKey) {
-    // TODO: 未来实现云端 AI 调用
+// 通用 AI 调用：发送 messages，返回文本
+async function callLongCat(messages, temperature) {
+  if (!AI_CONFIG.enabled) return null;
+  try {
+    const resp = await fetch(AI_CONFIG.endpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + AI_CONFIG.apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: AI_CONFIG.model,
+        messages: messages,
+        temperature: temperature != null ? temperature : 0.85,
+        max_tokens: 1200
+      })
+    });
+    if (!resp.ok) {
+      console.error('[LongCat] HTTP', resp.status, await resp.text());
+      return null;
+    }
+    const data = await resp.json();
+    return data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  } catch (e) {
+    console.error('[LongCat] 调用失败:', e.message);
+    return null;
   }
+}
+
+// 帮你说：把难以说出口的话，变成对方愿意听的版本
+// 返回 { understanding, transformed, variants: {gentle, direct, playful} }
+async function aiSay(rawText) {
+  const systemPrompt = '你是一个温柔的沟通助手。用户会给你一段"想说但说不出口"的话，你的任务是帮 ta 把它变成对方愿意听进去的版本。\n\n要求：\n1. understanding：用第二人称"你"解读用户真正想表达什么，2-3 句话，温柔、不评判。\n2. transformed：润色后的版本，第一人称"我"，3-5 句话，保留原意但语气更柔和，让对方愿意听。\n3. variants.gentle / direct / playful：分别用温柔、直接、俏皮三种语气各给一个版本，每条 2-3 句话。\n\n严格返回 JSON，不要任何额外文字：\n{"understanding":"...","transformed":"...","variants":{"gentle":"...","direct":"...","playful":"..."}}';
+  const userPrompt = '用户的话：' + rawText;
+  const out = await callLongCat([
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ], 0.85);
+  if (!out) return null;
+  try {
+    // 兼容带或不带 ```json 包裹
+    let s = out.trim();
+    if (s.startsWith('```')) {
+      s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    }
+    return JSON.parse(s);
+  } catch (e) {
+    console.error('[aiSay] JSON 解析失败:', e.message, out.slice(0, 200));
+    return null;
+  }
+}
+
+// 帮你懂：理解对方话背后的真实意图，给出"靠近一步"的话术
+// 返回 { understanding, approach: [string, string] }
+async function aiUnderstand(rawText) {
+  const systemPrompt = '你是一个温柔的关系沟通助手。用户会描述一段关系中的困惑或冲突，你的任务是帮 ta 理解对方话背后的真实意图，并给出可以"靠近一步"的话术。\n\n要求：\n1. understanding：用第二人称"你"解读——你们之间发生了什么，对方可能真正想表达什么，2-4 句话，不站队、不评判，帮用户从对方视角看一眼。\n2. approach：给出 2 条具体的话术建议，每条 2-3 句话，是用户可以真的发出去的话，温柔、具体、可执行。\n\n严格返回 JSON，不要任何额外文字：\n{"understanding":"...","approach":["...","..."]}';
+  const userPrompt = '用户描述的场景：' + rawText;
+  const out = await callLongCat([
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: userPrompt }
+  ], 0.85);
+  if (!out) return null;
+  try {
+    let s = out.trim();
+    if (s.startsWith('```')) {
+      s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    }
+    return JSON.parse(s);
+  } catch (e) {
+    console.error('[aiUnderstand] JSON 解析失败:', e.message, out.slice(0, 200));
+    return null;
+  }
+}
+
+// 通用预留接口（每日一问、月度回顾等未来可接）
+function generateContent(type, context) {
   return null; // 返回 null 表示用本地模板
 }
 
@@ -1224,9 +1295,40 @@ function initDemoRoom() {
   console.log('Demo 房间已创建: ' + DEMO_ROOM_ID + ' (token: ' + DEMO_ROOM_TOKEN + ')');
 }
 
+// ========== API: AI 帮你说 ==========
+// POST /api/ai/say  body: { text: string }
+// 返回 { success, ai: true/false, understanding, transformed, variants }
+app.post('/api/ai/say', async (req, res) => {
+  const text = (req.body && req.body.text || '').trim();
+  if (!text) return res.status(400).json({ success: false, error: '请输入想说的话' });
+  if (!AI_CONFIG.enabled) return res.json({ success: false, ai: false, error: 'AI 未启用' });
+  const result = await aiSay(text);
+  if (!result) return res.json({ success: false, ai: false, error: 'AI 调用失败' });
+  res.json({ success: true, ai: true, data: result });
+});
+
+// ========== API: AI 帮你懂 ==========
+// POST /api/ai/understand  body: { text: string }
+// 返回 { success, ai: true/false, understanding, approach }
+app.post('/api/ai/understand', async (req, res) => {
+  const text = (req.body && req.body.text || '').trim();
+  if (!text) return res.status(400).json({ success: false, error: '请输入场景描述' });
+  if (!AI_CONFIG.enabled) return res.json({ success: false, ai: false, error: 'AI 未启用' });
+  const result = await aiUnderstand(text);
+  if (!result) return res.json({ success: false, ai: false, error: 'AI 调用失败' });
+  res.json({ success: true, ai: true, data: result });
+});
+
+// ========== API: AI 状态探测 ==========
+// GET /api/ai/status  返回 AI 是否启用，供前端探测
+app.get('/api/ai/status', (req, res) => {
+  res.json({ success: true, enabled: AI_CONFIG.enabled, model: AI_CONFIG.enabled ? AI_CONFIG.model : null });
+});
+
 // ========== START ==========
 app.listen(PORT, () => {
   console.log('慢慢说服务端已启动: http://localhost:' + PORT);
   console.log('数据目录: ' + DATA_DIR);
+  console.log('AI (LongCat-2.0): ' + (AI_CONFIG.enabled ? '已启用' : '未启用（设置 LONGCAT_API_KEY 环境变量开启）'));
   initDemoRoom();
 });

@@ -35,8 +35,13 @@ fi
 mkdir -p data uploads
 echo "[3/5] 数据目录就绪（data/ uploads/）"
 
-# 4. 后台启动
+# 4. 后台启动（自动加载 .env 中的环境变量）
 echo "[4/5] 启动 node server.js（日志：$LOG_FILE）"
+# 加载 .env（如存在）
+if [ -f ".env" ]; then
+  export $(grep -v '^#' .env | xargs)
+  echo "      已加载 .env"
+fi
 nohup node server.js > "$LOG_FILE" 2>&1 &
 NODE_PID=$!
 echo "      PID: $NODE_PID"

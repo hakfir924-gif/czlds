@@ -1176,6 +1176,59 @@ function setText(el, text) {
   if (el) el.textContent = text == null ? '' : String(text);
 }
 
+/* ========== AI 后端探测（在线时调真实大模型，离线时降级本地 mock） ========== */
+var API_BASE = (function() {
+  var h = location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1') return 'http://localhost:3000';
+  return 'http://' + h + ':3000';
+})();
+var AI_ENABLED = false; // 启动时探测，后端可用且配了 key 才为 true
+
+function probeAI() {
+  fetch(API_BASE + '/api/ai/status')
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success && d.enabled) {
+        AI_ENABLED = true;
+        console.log('[AI] LongCat-2.0 已启用，帮你说/帮你懂将使用真实 AI');
+      } else {
+        console.log('[AI] 后端未启用 AI，使用本地 mock 降级');
+      }
+    })
+    .catch(function() { console.log('[AI] 后端不可达，使用本地 mock'); });
+}
+probeAI();
+
+// 调用后端 AI 帮你说，返回 Promise<null|{understanding,transformed,variants}>
+function callAiSay(text) {
+  return fetch(API_BASE + '/api/ai/say', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success && d.ai && d.data) return d.data;
+      return null;
+    })
+    .catch(function() { return null; });
+}
+
+// 调用后端 AI 帮你懂，返回 Promise<null|{understanding,approach:[,]}>
+function callAiUnderstand(text) {
+  return fetch(API_BASE + '/api/ai/understand', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text })
+  })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d && d.success && d.ai && d.data) return d.data;
+      return null;
+    })
+    .catch(function() { return null; });
+}
+
 /* ========== Mock 数据：帮你说 5 场景 ========== */
 var SAY_SCENARIOS = {
   hurt: {
@@ -1593,39 +1646,58 @@ sayPolishBtn.addEventListener('click', function() {
     setTimeout(function() { sayInput.style.borderColor = ''; }, 1200);
     return;
   }
-  var scenario = matchSayScenario(input);
-  currentSayScenario = scenario;
+
+  // 先用本地 mock 兜底（立即可见）
+  var fallback = matchSayScenario(input);
+  currentSayScenario = fallback;
   currentVariant = null;
 
   // 重置 chips 状态
   document.querySelectorAll('#sayChips .chip').forEach(function(c) { c.classList.remove('active'); });
 
-  // 显示结果区
+  // 显示结果区 + loading
   sayResult.classList.add('show');
   sayLayers.classList.remove('show');
   sayLoading.style.display = 'flex';
   setText(sayRaw, input);
-  setText(sayUnderstanding, scenario.understanding);
-  setText(sayTransformed, scenario.transformed);
-
-  // 隐藏"发出去"按钮（动画期间）
+  setText(sayUnderstanding, fallback.understanding);
+  setText(sayTransformed, fallback.transformed);
   saySendBtn.classList.add('hidden');
 
-  // 滚动到结果区
   setTimeout(function() {
     sayResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 80);
 
-  // 1.5s 后切换为结果层
-  setTimeout(function() {
+  // AI 可用时调真实大模型，结果到了就替换
+  if (AI_ENABLED) {
+    sayLoading.querySelector('.loading-text').textContent = '龙猫正在帮你找到更好的说法...';
+    callAiSay(input).then(function(aiData) {
+      if (aiData && aiData.understanding && aiData.transformed) {
+        // 用 AI 结果覆盖 mock
+        currentSayScenario = {
+          understanding: aiData.understanding,
+          transformed: aiData.transformed,
+          variants: aiData.variants || fallback.variants
+        };
+        setText(sayUnderstanding, aiData.understanding);
+        setText(sayTransformed, aiData.transformed);
+      }
+      finishSayLoading();
+    });
+  } else {
+    // 离线 mock：1.5s 后展示
+    setTimeout(finishSayLoading, 1500);
+  }
+
+  function finishSayLoading() {
     sayLoading.style.display = 'none';
+    sayLoading.querySelector('.loading-text').textContent = '正在帮你找到更好的说法...';
     sayLayers.classList.add('show');
-    // 显示"发出去"按钮
     setTimeout(function() {
       saySendBtn.classList.remove('hidden');
       saySendBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }, 600);
-  }, 1500);
+  }
 });
 
 // "发出去 →"按钮：把当前转化层内容带到第 3 页，然后翻页
@@ -1753,19 +1825,61 @@ understandBtn.addEventListener('click', function() {
     setTimeout(function() { understandInput.style.borderColor = ''; }, 1200);
     return;
   }
-  var scenario = matchUnderstandScenario(input);
-  currentUnderstandScenario = scenario;
 
-  // 显示结果区
+  // 先用本地 mock 兜底
+  var fallback = matchUnderstandScenario(input);
+  currentUnderstandScenario = fallback;
+
+  // 显示结果区 + loading
   understandResult.classList.add('show');
   understandLayers.classList.remove('show');
   understandLoading.style.display = 'flex';
   setText(understandRaw, input);
-  setText(understandUnderstanding, scenario.understanding);
+  setText(understandUnderstanding, fallback.understanding);
 
-  // 渲染靠近层 chips
+  // 渲染 mock 靠近层 chips（立即可见）
+  renderApproachChips(fallback.approach);
+  understandContinueBtn.classList.add('hidden');
+
+  setTimeout(function() {
+    understandResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+
+  // AI 可用时调真实大模型
+  if (AI_ENABLED) {
+    understandLoading.querySelector('.loading-text').textContent = '龙猫正在帮你理解...';
+    callAiUnderstand(input).then(function(aiData) {
+      if (aiData && aiData.understanding) {
+        setText(understandUnderstanding, aiData.understanding);
+        currentUnderstandScenario = {
+          understanding: aiData.understanding,
+          approach: (aiData.approach && aiData.approach.length) ? aiData.approach : fallback.approach
+        };
+        if (aiData.approach && aiData.approach.length) {
+          renderApproachChips(aiData.approach);
+        }
+      }
+      finishUnderstandLoading();
+    });
+  } else {
+    setTimeout(finishUnderstandLoading, 1500);
+  }
+
+  function finishUnderstandLoading() {
+    understandLoading.style.display = 'none';
+    understandLoading.querySelector('.loading-text').textContent = '正在帮你理解...';
+    understandLayers.classList.add('show');
+    setTimeout(function() {
+      understandContinueBtn.classList.remove('hidden');
+      understandContinueBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 600);
+  }
+});
+
+// 渲染靠近层 chips（抽出来复用）
+function renderApproachChips(list) {
   approachChips.innerHTML = '';
-  scenario.approach.forEach(function(text, idx) {
+  list.forEach(function(text) {
     var chip = document.createElement('button');
     chip.className = 'approach-chip';
     chip.type = 'button';
@@ -1777,23 +1891,7 @@ understandBtn.addEventListener('click', function() {
     });
     approachChips.appendChild(chip);
   });
-
-  understandContinueBtn.classList.add('hidden');
-
-  setTimeout(function() {
-    understandResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 80);
-
-  // 1.5s 后显示结果层
-  setTimeout(function() {
-    understandLoading.style.display = 'none';
-    understandLayers.classList.add('show');
-    setTimeout(function() {
-      understandContinueBtn.classList.remove('hidden');
-      understandContinueBtn.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, 600);
-  }, 1500);
-});
+}
 
 understandContinueBtn.addEventListener('click', function() {
   nextPage();
